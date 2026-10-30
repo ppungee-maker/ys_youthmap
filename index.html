@@ -142,11 +142,36 @@
     outline-offset:3px;
     border-radius:10px;
   }
+  .pin.flash{z-index:5;}
+  .pin.flash .pin-glyph{animation:pinFlash .8s ease-in-out 2;}
+  @keyframes pinFlash{
+    0%,100%{transform:scale(1);filter:drop-shadow(0 3px 2px rgba(74,64,56,.3));}
+    50%{transform:scale(1.3);filter:drop-shadow(0 0 14px var(--accent-coral)) drop-shadow(0 3px 2px rgba(74,64,56,.3));}
+  }
 
   .pin-glyph{
     width:50px;height:58px;
     filter:drop-shadow(0 3px 2px rgba(74,64,56,.3));
   }
+
+  .locate-btn{
+    position:absolute;
+    right:14px;top:14px;
+    width:46px;height:46px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--card-bg);
+    border:2px solid var(--sage);
+    box-shadow:0 6px 14px -6px rgba(74,64,56,.5);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    z-index:6;
+  }
+  .locate-btn:hover{background:var(--cream);}
+  .locate-btn:focus-visible{outline:3px solid var(--accent-coral);outline-offset:2px;}
+  .locate-btn svg{width:26px;height:26px;display:block;}
+  .locate-btn.loading svg{animation:locateSpin .9s linear infinite;}
+  @keyframes locateSpin{to{transform:rotate(360deg);}}
 
   .chest-btn,.post-btn{transform:translate(-50%,-50%);}
   .chest-icon,.post-icon{
@@ -270,6 +295,36 @@
   }
   .notice .t{font-weight:700;font-size:14.5px;margin:3px 0 4px;}
   .notice .b{font-size:13.5px;line-height:1.6;color:var(--ink);}
+
+  .near-list{display:grid;gap:8px;margin:4px 0 0;max-height:52vh;overflow-y:auto;}
+  .near-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    text-align:left;
+    background:var(--cream);
+    border:2px solid #F0E6CE;
+    border-radius:14px;
+    padding:9px 10px 9px 12px;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--ink);
+  }
+  .near-item:hover{border-color:var(--sage);}
+  .near-dist{
+    flex:none;
+    margin-left:auto;
+    font-family:'Jua',sans-serif;
+    font-size:12.5px;
+    color:var(--accent-coral-deep);
+    background:#FFFFFF;
+    border:2px solid #F0E6CE;
+    border-radius:999px;
+    padding:4px 10px;
+  }
+  .locate-status{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:14px;padding:6px 0;}
+  .locate-status svg{width:20px;height:20px;flex:none;animation:locateSpin .9s linear infinite;}
 </style>
 
 <div class="page">
@@ -478,27 +533,27 @@
 <script>
   const FACILITIES = [
     {id:'f1', num:1, name:'엑스포과학공원·한빛탑', cat:'행사거점', dong:'도룡동(신성동)', region:4,
-      left:68, top:37, desc:'한빛탑 아래 광장에서 청소년 대상 과학·문화 행사가 자주 열려요.'},
+      left:68, top:37, lat:36.3744134, lng:127.3870881, desc:'한빛탑 아래 광장에서 청소년 대상 과학·문화 행사가 자주 열려요.'},
     {id:'f2', num:2, name:'구즉청소년문화의집', cat:'문화의집', dong:'봉산동(구즉동)', region:5,
-      left:74, top:20, desc:'VR체험실, 댄스연습실, 미디어실을 갖춘 테크노밸리의 청소년 아지트예요.'},
+      left:74, top:20, lat:36.4446094, lng:127.3839063, desc:'VR체험실, 댄스연습실, 미디어실을 갖춘 테크노밸리의 청소년 아지트예요.'},
     {id:'f3', num:3, name:'다함께돌봄센터 유성아이 1호점', cat:'돌봄시설', dong:'하기동(노은2동)', region:3,
-      left:30, top:45, desc:'송림마을3단지 안에 있는 방과 후 동네 돌봄 공간이에요.'},
+      left:30, top:45, lat:36.3893275, lng:127.3229048, desc:'송림마을3단지 안에 있는 방과 후 동네 돌봄 공간이에요.'},
     {id:'f4', num:4, name:'국립중앙과학관', cat:'과학관', dong:'구성동(온천2동)', region:2,
-      left:64, top:48, desc:'청소년 과학축제와 체험전이 자주 열리는 과학의 전당이에요.'},
+      left:64, top:48, lat:36.3752581, lng:127.3755339, desc:'청소년 과학축제와 체험전이 자주 열리는 과학의 전당이에요.'},
     {id:'f5', num:5, name:'유성구청소년수련관', cat:'수련관', dong:'죽동(온천2동)', region:2,
-      left:48, top:50, desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
+      left:48, top:50, lat:36.3806509, lng:127.3238100, desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
     {id:'f6', num:6, name:'유성구청소년상담복지센터', cat:'상담복지', dong:'죽동(온천2동)', region:2,
-      left:36, top:54, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
+      left:36, top:54, lat:36.3804952, lng:127.3236602, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
     {id:'f7', num:7, name:'유성구미래교육지원센터', cat:'진로체험', dong:'죽동(온천2동)', region:2,
-      left:68, top:55, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
+      left:68, top:55, lat:36.3806000, lng:127.3237300, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
     {id:'f8', num:8, name:'학교밖청소년지원센터 꿈드림', cat:'학교밖지원', dong:'어은동(온천2동)', region:2,
-      left:42, top:60, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
+      left:42, top:60, lat:36.3622077, lng:127.3550488, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
     {id:'f9', num:9, name:'장대청소년문화의집', cat:'문화의집', dong:'장대동(온천2동)', region:2,
-      left:72, top:62, desc:'동아리 활동과 문화 프로그램이 가득한 작은 아지트예요.'},
+      left:72, top:62, lat:36.3578825, lng:127.3366933, desc:'동아리 활동과 문화 프로그램이 가득한 작은 아지트예요.'},
     {id:'f10', num:10, name:'다함께돌봄센터 유성아이 2호점', cat:'돌봄시설', dong:'계산동(학하동)', region:1,
-      left:33, top:66, desc:'오투그란데미학 단지 안, 학하동 아이들의 방과 후 쉼터예요.'},
+      left:33, top:66, lat:36.3399435, lng:127.3026514, desc:'오투그란데미학 단지 안, 학하동 아이들의 방과 후 쉼터예요.'},
     {id:'f11', num:11, name:'다함께돌봄센터 유성아이 11호점', cat:'돌봄시설', dong:'원신흥동', region:1,
-      left:60, top:68, desc:'갑천2 트리풀시티 단지 안에 2026년 새로 문을 연 돌봄 공간이에요.'},
+      left:60, top:68, lat:36.3383013, lng:127.3377191, desc:'갑천2 트리풀시티 단지 안에 2026년 새로 문을 연 돌봄 공간이에요.'},
   ];
 
   const CHESTS = [
@@ -593,6 +648,15 @@
       </svg>`;
   }
 
+  function locateSvg(){
+    return `
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="3.2" fill="var(--accent-coral-deep)"/>
+        <circle cx="12" cy="12" r="8" stroke="var(--ink)" stroke-width="1.8"/>
+        <path d="M12 1.5V5M12 19V22.5M1.5 12H5M19 12H22.5" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>`;
+  }
+
   function postSvg(){
     return `
       <svg class="post-icon" viewBox="0 0 44 44">
@@ -608,6 +672,7 @@
 
   const pinLayer = document.getElementById('pinLayer');
   const legend = document.getElementById('legend');
+  const pinButtons = {};
 
   FACILITIES.forEach(fac=>{
     const btn = document.createElement('button');
@@ -618,6 +683,7 @@
     btn.innerHTML = pinSvg(fac);
     btn.addEventListener('click', ()=>openFacility(fac));
     pinLayer.appendChild(btn);
+    pinButtons[fac.id] = btn;
 
     const row = document.createElement('button');
     row.className = 'legend-item';
@@ -647,10 +713,110 @@
   postBtn.addEventListener('click', openPost);
   pinLayer.appendChild(postBtn);
 
+  const locateBtn = document.createElement('button');
+  locateBtn.className = 'locate-btn';
+  locateBtn.type = 'button';
+  locateBtn.title = '내 위치에서 가까운 시설 찾기';
+  locateBtn.setAttribute('aria-label', '내 위치에서 가까운 시설 찾기');
+  locateBtn.innerHTML = locateSvg();
+  locateBtn.addEventListener('click', findNearby);
+  document.getElementById('mapWrap').appendChild(locateBtn);
+
   const modal = document.getElementById('modal');
   const modalInner = document.getElementById('modalInner');
 
   function closeModal(){ modal.close(); }
+
+  function haversine(lat1, lng1, lat2, lng2){
+    const R = 6371000;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function formatDistance(m){
+    return m < 1000 ? Math.round(m) + 'm' : (m / 1000).toFixed(1) + 'km';
+  }
+
+  function findNearby(){
+    if(!navigator.geolocation){
+      showLocateMessage('이 브라우저에서는 위치 확인을 지원하지 않아요.');
+      return;
+    }
+    locateBtn.classList.add('loading');
+    locateBtn.disabled = true;
+    showLocateMessage('내 위치를 확인하고 있어요…', true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        locateBtn.classList.remove('loading');
+        locateBtn.disabled = false;
+        showNearbyList(pos.coords.latitude, pos.coords.longitude);
+      },
+      err => {
+        locateBtn.classList.remove('loading');
+        locateBtn.disabled = false;
+        let msg = '위치를 확인할 수 없어요. 잠시 후 다시 시도해 주세요.';
+        if(err.code === err.PERMISSION_DENIED) msg = '위치 권한이 꺼져 있어요. 브라우저 설정에서 이 페이지의 위치 접근을 허용해 주세요.';
+        else if(err.code === err.TIMEOUT) msg = '위치 확인이 너무 오래 걸려요. 다시 시도해 주세요.';
+        showLocateMessage(msg);
+      },
+      {enableHighAccuracy:true, timeout:10000, maximumAge:60000}
+    );
+  }
+
+  function showLocateMessage(msg, loading){
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:var(--accent-green)">내 위치</span>
+      <h3>가까운 시설 찾기</h3>
+      ${loading
+        ? `<div class="locate-status">${locateSvg()}<span>${msg}</span></div>`
+        : `<p>${msg}</p>`}
+      <button class="modal-close" id="closeBtn">닫기</button>`;
+    bindClose();
+    if(!modal.open) modal.showModal();
+  }
+
+  function showNearbyList(lat, lng){
+    const ranked = FACILITIES
+      .map(fac => ({fac, dist: haversine(lat, lng, fac.lat, fac.lng)}))
+      .sort((a, b) => a.dist - b.dist);
+
+    const rows = ranked.map(({fac, dist})=> `
+      <button class="near-item" data-id="${fac.id}">
+        <span class="legend-num" style="background:${REGION_VAR(fac.region)}">${fac.num}</span>
+        <span class="legend-text">
+          <span class="name">${fac.name}</span>
+          <span class="meta">${fac.cat} · ${fac.dong}</span>
+        </span>
+        <span class="near-dist">${formatDistance(dist)}</span>
+      </button>`).join('');
+
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:var(--accent-green)">내 위치에서 가까운 시설</span>
+      <h3>가까운 순서로 보여드려요</h3>
+      <div class="near-list">${rows}</div>
+      <button class="modal-close" id="closeBtn">닫기</button>`;
+    bindClose();
+    modalInner.querySelectorAll('.near-item').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const fac = FACILITIES.find(f => f.id === btn.dataset.id);
+        closeModal();
+        flashPin(fac);
+      });
+    });
+    if(!modal.open) modal.showModal();
+  }
+
+  function flashPin(fac){
+    const pinBtn = pinButtons[fac.id];
+    if(!pinBtn) return;
+    pinBtn.scrollIntoView({behavior:'smooth', block:'center'});
+    pinBtn.classList.add('flash');
+    setTimeout(()=> pinBtn.classList.remove('flash'), 1600);
+  }
 
   function openFacility(fac){
     modalInner.innerHTML = `
