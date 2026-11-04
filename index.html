@@ -4,32 +4,32 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-outer:#F3F1EC;
-    --ground:#EDE6D6;
-    --sage:#9FBE98;
-    --road:#FFFFFF;
-    --road-edge:#E3D2A3;
-    --river:#9BCBE0;
-    --river-dark:#79B2CC;
-    --ink:#4A4038;
-    --ink-soft:#8D8070;
+    --bg-outer:#FBF6EA;
+    --ground:#F2EAD3;
+    --sage:#A8DC96;
+    --road:#FFF6E1;
+    --road-edge:#FFE0A0;
+    --river:#8ED6EE;
+    --river-dark:#58AED1;
+    --ink:#3E4A38;
+    --ink-soft:#80896F;
     --card-bg:#FFFFFF;
-    --accent-green:#4F8066;
-    --accent-coral:#E8846B;
+    --accent-green:#4F8F56;
+    --accent-coral:#FF9B78;
     --accent-coral-deep:#D4654A;
-    --gold:#E7B84C;
-    --gold-light:#F4D788;
-    --gold-dark:#C7912A;
-    --cream:#FFF8E9;
+    --gold:#FFCB55;
+    --gold-light:#FFE59A;
+    --gold-dark:#E0A02C;
+    --cream:#FFFBEF;
     --zone1:#F7CE9F;
     --zone2:#AFD3E8;
     --zone3:#AED9A6;
     --zone4:#C3B8E6;
     --zone5:#F3DD8E;
-    --land:#AACB8E;
-    --land-light:#C3DBA9;
-    --land-dark:#8FB875;
-    --land-deep:#7BA865;
+    --land:#8ED17D;
+    --land-light:#BBE8A9;
+    --land-dark:#5FAE55;
+    --land-deep:#4F9A48;
   }
 
   *{box-sizing:border-box;}
@@ -92,8 +92,8 @@
 
   .sheet{
     background:var(--card-bg);
-    border-radius:26px;
-    box-shadow:0 18px 38px -20px rgba(74,64,56,.4);
+    border-radius:30px;
+    box-shadow:0 18px 38px -20px rgba(54,64,45,.34);
     padding:18px 16px 24px;
   }
 
@@ -210,7 +210,7 @@
     text-align:left;
     background:var(--cream);
     border:2px solid #F0E6CE;
-    border-radius:14px;
+    border-radius:18px;
     padding:10px 12px;
     cursor:pointer;
     font-family:inherit;
@@ -241,7 +241,7 @@
 
   dialog#modal{
     border:none;
-    border-radius:22px 22px 0 0;
+    border-radius:28px 28px 0 0;
     padding:0;
     width:100%;
     max-width:480px;
@@ -250,7 +250,7 @@
     color:var(--ink);
   }
   @media (min-width:560px){
-    dialog#modal{border-radius:22px;margin:auto;}
+    dialog#modal{border-radius:28px;margin:auto;}
   }
   dialog#modal::backdrop{background:rgba(74,64,56,.45);}
   .modal-inner{padding:22px 20px 24px;}
@@ -271,7 +271,7 @@
     width:100%;
     padding:11px;
     border:2px solid #ECE2CC;
-    border-radius:14px;
+    border-radius:18px;
     background:var(--cream);
     font-family:'Jua',sans-serif;
     font-size:14px;
@@ -281,7 +281,7 @@
   .notice-list{display:grid;gap:10px;margin-top:4px;}
   .notice{
     border:2px solid #F0E6CE;
-    border-radius:14px;
+    border-radius:18px;
     padding:10px 12px;
     background:var(--cream);
   }
@@ -305,7 +305,7 @@
     text-align:left;
     background:var(--cream);
     border:2px solid #F0E6CE;
-    border-radius:14px;
+    border-radius:18px;
     padding:9px 10px 9px 12px;
     cursor:pointer;
     font-family:inherit;
@@ -358,7 +358,7 @@
 
   <div class="sheet">
     <div class="key-row">
-      <span class="item"><span class="key-dot" style="background:#5B8FD6"></span>번호 건물 = 청소년 시설</span>
+      <span class="item"><span class="key-dot" style="background:#78B6E8"></span>번호 건물 = 청소년 시설</span>
       <span class="item"><span class="key-dot" style="background:var(--gold)"></span>보물상자 = 급식카드 가맹점</span>
       <span class="item"><span class="key-dot" style="background:var(--accent-coral)"></span>우체국 = 새 소식</span>
     </div>
@@ -471,18 +471,18 @@
         </g>
 
         <!-- trees scattered across the whole park, shaded two-tone with ground shadow -->
-        <g stroke="var(--ink)" stroke-width="2">
-          <g transform="translate(540,980)"><ellipse cy="22" rx="16" ry="4" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-3" y="4" width="6" height="18" fill="#B98E57"/><ellipse cx="3" cy="-6" rx="20" ry="18" fill="var(--land-dark)"/><ellipse cx="-3" cy="-9" rx="18" ry="16" fill="var(--land-light)"/></g>
-          <g transform="translate(900,850)"><ellipse cy="20" rx="14" ry="3.6" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-3" y="4" width="6" height="18" fill="#B98E57"/><ellipse cx="3" cy="-5" rx="18" ry="16" fill="var(--land-dark)"/><ellipse cx="-3" cy="-8" rx="16" ry="14" fill="var(--land-light)"/></g>
-          <g transform="translate(1140,1230)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-3" y="4" width="6" height="16" fill="#B98E57"/><ellipse cx="2.5" cy="-5" rx="16" ry="14" fill="var(--land-dark)"/><ellipse cx="-2.5" cy="-7" rx="14" ry="12" fill="var(--land-light)"/></g>
-          <g transform="translate(420,2150)"><ellipse cy="18" rx="13" ry="3.4" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-3" y="4" width="6" height="16" fill="#B98E57"/><ellipse cx="2.5" cy="-5" rx="17" ry="15" fill="var(--land-dark)"/><ellipse cx="-2.5" cy="-7" rx="15" ry="13" fill="var(--land-light)"/></g>
-          <g transform="translate(650,1950)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-2.5" y="3" width="5" height="14" fill="#B98E57"/><ellipse cx="2" cy="-4" rx="14" ry="13" fill="var(--land-dark)"/><ellipse cx="-2" cy="-6" rx="12" ry="11" fill="var(--land-light)"/></g>
-          <g transform="translate(1030,1560)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-2.5" y="3" width="5" height="14" fill="#B98E57"/><ellipse cx="2" cy="-4" rx="14" ry="13" fill="var(--land-dark)"/><ellipse cx="-2" cy="-6" rx="12" ry="11" fill="var(--land-light)"/></g>
-          <g transform="translate(700,1340)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-3" y="4" width="6" height="16" fill="#B98E57"/><ellipse cx="2.5" cy="-5" rx="16" ry="14" fill="var(--land-dark)"/><ellipse cx="-2.5" cy="-7" rx="14" ry="12" fill="var(--land-light)"/></g>
-          <g transform="translate(280,1180)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-2.5" y="3" width="5" height="14" fill="#B98E57"/><ellipse cx="2" cy="-4" rx="14" ry="13" fill="var(--land-dark)"/><ellipse cx="-2" cy="-6" rx="12" ry="11" fill="var(--land-light)"/></g>
-          <g transform="translate(1060,760)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-3" y="4" width="6" height="16" fill="#B98E57"/><ellipse cx="2.5" cy="-5" rx="16" ry="14" fill="var(--land-dark)"/><ellipse cx="-2.5" cy="-7" rx="14" ry="12" fill="var(--land-light)"/></g>
-          <g transform="translate(1250,340)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-2.5" y="3" width="5" height="14" fill="#B98E57"/><ellipse cx="2" cy="-4" rx="14" ry="13" fill="var(--land-dark)"/><ellipse cx="-2" cy="-6" rx="12" ry="11" fill="var(--land-light)"/></g>
-          <g transform="translate(1390,660)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.22)" stroke="none"/><rect x="-2.5" y="3" width="5" height="14" fill="#B98E57"/><ellipse cx="2" cy="-4" rx="14" ry="13" fill="var(--land-dark)"/><ellipse cx="-2" cy="-6" rx="12" ry="11" fill="var(--land-light)"/></g>
+        <g stroke="none">
+          <g transform="translate(540,980)"><ellipse cy="22" rx="16" ry="4" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="20" rx="3" fill="#B98E57"/><circle cx="3" cy="-6" r="20" fill="var(--land-dark)"/><circle cx="-4" cy="-10" r="15" fill="var(--land-light)"/></g>
+          <g transform="translate(900,850)"><ellipse cy="20" rx="14" ry="3.6" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="18" rx="3" fill="#B98E57"/><circle cx="3" cy="-5" r="18" fill="var(--land-dark)"/><circle cx="-3" cy="-9" r="13" fill="var(--land-light)"/></g>
+          <g transform="translate(1140,1230)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="16" fill="var(--land-dark)"/><circle cx="-3" cy="-8" r="11.5" fill="var(--land-light)"/></g>
+          <g transform="translate(420,2150)"><ellipse cy="18" rx="13" ry="3.4" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="17" fill="var(--land-dark)"/><circle cx="-3" cy="-9" r="12.5" fill="var(--land-light)"/></g>
+          <g transform="translate(650,1950)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.2)"/><rect x="-2.5" y="2" width="5" height="14" rx="2.5" fill="#B98E57"/><circle cx="2" cy="-4" r="14" fill="var(--land-dark)"/><circle cx="-2.5" cy="-7" r="10" fill="var(--land-light)"/></g>
+          <g transform="translate(1030,1560)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.2)"/><rect x="-2.5" y="2" width="5" height="14" rx="2.5" fill="#B98E57"/><circle cx="2" cy="-4" r="14" fill="var(--land-dark)"/><circle cx="-2.5" cy="-7" r="10" fill="var(--land-light)"/></g>
+          <g transform="translate(700,1340)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="16" fill="var(--land-dark)"/><circle cx="-3" cy="-8" r="11.5" fill="var(--land-light)"/></g>
+          <g transform="translate(280,1180)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.2)"/><rect x="-2.5" y="2" width="5" height="14" rx="2.5" fill="#B98E57"/><circle cx="2" cy="-4" r="14" fill="var(--land-dark)"/><circle cx="-2.5" cy="-7" r="10" fill="var(--land-light)"/></g>
+          <g transform="translate(1060,760)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="16" fill="var(--land-dark)"/><circle cx="-3" cy="-8" r="11.5" fill="var(--land-light)"/></g>
+          <g transform="translate(1250,340)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.2)"/><rect x="-2.5" y="2" width="5" height="14" rx="2.5" fill="#B98E57"/><circle cx="2" cy="-4" r="14" fill="var(--land-dark)"/><circle cx="-2.5" cy="-7" r="10" fill="var(--land-light)"/></g>
+          <g transform="translate(1390,660)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.2)"/><rect x="-2.5" y="2" width="5" height="14" rx="2.5" fill="#B98E57"/><circle cx="2" cy="-4" r="14" fill="var(--land-dark)"/><circle cx="-2.5" cy="-7" r="10" fill="var(--land-light)"/></g>
         </g>
 
         <!-- 5 treasure-zone labels -->
@@ -574,18 +574,18 @@
   ];
 
   const ICONS = {
-    '행사거점': {shape:'tower-stripe', roof:'#E8846B'},
-    '문화의집': {shape:'peak', roof:'#E89A5C'},
-    '돌봄시설': {shape:'peak', roof:'#5FB8AE'},
-    '과학관':   {shape:'flat', roof:'#8C8FE0'},
-    '수련관':   {shape:'tower', roof:'#5B8FD6', roofDark:'#3E63A0'},
-    '상담복지': {shape:'flat', roof:'#E888A8'},
-    '진로체험': {shape:'flat', roof:'#A98CE0'},
-    '학교밖지원':{shape:'peak', roof:'#8FBE68'},
+    '행사거점': {shape:'tower-stripe', roof:'#FF9B78'},
+    '문화의집': {shape:'peak', roof:'#FFAE70'},
+    '돌봄시설': {shape:'peak', roof:'#6FD4C4'},
+    '과학관':   {shape:'flat', roof:'#A98CE8'},
+    '수련관':   {shape:'tower', roof:'#78B6E8', roofDark:'#5B8FD6'},
+    '상담복지': {shape:'flat', roof:'#FF9EC0'},
+    '진로체험': {shape:'flat', roof:'#B79BF0'},
+    '학교밖지원':{shape:'peak', roof:'#9FD96E'},
   };
   const REGION_BADGE = {1:'#D98A4E',2:'#4476A8',3:'#5FA055',4:'#7A6CC2',5:'#C99A2C'};
-  const WALL = '#FFF8E9';
-  const WINDOW = '#BEE3EF';
+  const WALL = '#FFFBEF';
+  const WINDOW = '#CDEAF2';
 
   const REGION_VAR = r => REGION_BADGE[r];
 
@@ -599,34 +599,34 @@
     let body = '';
     if(icon.shape === 'tower'){
       body = `
-        <rect x="14" y="24" width="26" height="32" fill="${WALL}" stroke="var(--ink)" stroke-width="2"/>
-        <polygon points="27,14 8,26 46,26" fill="${icon.roofDark}" stroke="var(--ink)" stroke-width="2"/>
-        <polygon points="27,2 16,14 38,14" fill="${icon.roof}" stroke="var(--ink)" stroke-width="2"/>
-        <rect x="26.3" y="-6" width="1.4" height="10" fill="var(--ink-soft)"/>
-        <path d="M27.7 -6 l8 2 l-8 2 Z" fill="var(--accent-coral)"/>
-        <rect x="19" y="34" width="7" height="9" rx="1" fill="${WINDOW}" stroke="var(--ink)" stroke-width="1.2"/>
-        <rect x="28" y="34" width="7" height="9" rx="1" fill="${WINDOW}" stroke="var(--ink)" stroke-width="1.2"/>
-        <rect x="22" y="47" width="10" height="9" rx="1" fill="var(--ink-soft)"/>`;
+        <rect x="14" y="24" width="26" height="32" rx="7" fill="${WALL}"/>
+        <path d="M7 26 Q27 9 47 26 Z" fill="${icon.roofDark}"/>
+        <path d="M15 14 Q27 0 39 14 Z" fill="${icon.roof}"/>
+        <rect x="26.3" y="-4" width="1.4" height="9" rx=".7" fill="var(--ink-soft)"/>
+        <path d="M27.7 -4 l8 2 l-8 2 Z" fill="var(--accent-coral)"/>
+        <rect x="19" y="34" width="7" height="9" rx="3" fill="${WINDOW}"/>
+        <rect x="28" y="34" width="7" height="9" rx="3" fill="${WINDOW}"/>
+        <rect x="22" y="47" width="10" height="9" rx="3.5" fill="${icon.roofDark}"/>`;
     } else if(icon.shape === 'flat'){
       body = `
-        <rect x="9" y="26" width="36" height="28" rx="3" fill="${WALL}" stroke="var(--ink)" stroke-width="2"/>
-        <rect x="9" y="22" width="36" height="9" rx="2" fill="${icon.roof}" stroke="var(--ink)" stroke-width="2"/>
-        <rect x="15" y="38" width="11" height="12" rx="1.5" fill="${WINDOW}" stroke="var(--ink)" stroke-width="1.3"/>
-        <rect x="30" y="38" width="11" height="12" rx="1.5" fill="${WINDOW}" stroke="var(--ink)" stroke-width="1.3"/>`;
+        <rect x="9" y="26" width="36" height="28" rx="8" fill="${WALL}"/>
+        <rect x="8" y="20" width="38" height="12" rx="6" fill="${icon.roof}"/>
+        <rect x="15" y="38" width="11" height="12" rx="4" fill="${WINDOW}"/>
+        <rect x="30" y="38" width="11" height="12" rx="4" fill="${WINDOW}"/>`;
     } else if(icon.shape === 'tower-stripe'){
       body = `
-        <rect x="16" y="10" width="22" height="40" rx="4" fill="#FFFFFF" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="16" y="10" width="22" height="40" rx="9" fill="#FFFFFF"/>
         <rect x="16" y="22" width="22" height="8" fill="${icon.roof}"/>
         <rect x="16" y="38" width="22" height="8" fill="${icon.roof}"/>
-        <path d="M13 10 L27 -4 L41 10 Z" fill="${icon.roof}" stroke="var(--ink)" stroke-width="2"/>
+        <path d="M12 11 Q27 -6 42 11 Z" fill="${icon.roof}"/>
         <circle cx="27" cy="16" r="3" fill="var(--gold-light)"/>`;
     } else {
       body = `
-        <rect x="11" y="30" width="32" height="24" fill="${WALL}" stroke="var(--ink)" stroke-width="2"/>
-        <polygon points="27,8 6,30 48,30" fill="${icon.roof}" stroke="var(--ink)" stroke-width="2"/>
-        <rect x="17" y="37" width="8" height="8" rx="1" fill="${WINDOW}" stroke="var(--ink)" stroke-width="1.3"/>
-        <rect x="31" y="37" width="8" height="8" rx="1" fill="${WINDOW}" stroke="var(--ink)" stroke-width="1.3"/>
-        <rect x="23" y="46" width="8" height="8" rx="1" fill="var(--ink-soft)"/>`;
+        <rect x="11" y="30" width="32" height="24" rx="7" fill="${WALL}"/>
+        <path d="M5 31 Q27 4 49 31 Z" fill="${icon.roof}"/>
+        <rect x="17" y="37" width="8" height="9" rx="3" fill="${WINDOW}"/>
+        <rect x="31" y="37" width="8" height="9" rx="3" fill="${WINDOW}"/>
+        <rect x="23" y="46" width="8" height="8" rx="3" fill="${icon.roof}"/>`;
     }
     return `
       <svg class="pin-glyph" viewBox="0 0 54 62">
@@ -639,12 +639,11 @@
   function chestSvg(){
     return `
       <svg class="chest-icon" viewBox="0 0 44 44">
-        <ellipse cx="22" cy="40" rx="13" ry="3" fill="rgba(74,64,56,.2)"/>
-        <polygon points="8,20 22,27 22,39 8,32" fill="var(--gold)" stroke="var(--ink)" stroke-width="1.5"/>
-        <polygon points="22,27 36,20 36,32 22,39" fill="var(--gold-dark)" stroke="var(--ink)" stroke-width="1.5"/>
-        <polygon points="8,20 22,13 36,20 22,27" fill="var(--gold-light)" stroke="var(--ink)" stroke-width="1.5"/>
-        <circle cx="22" cy="29" r="3" fill="#FFFFFF" stroke="var(--ink)" stroke-width="1.5"/>
-        <path d="M19 16.5 l3 -2.4 l3 2.4" fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-linecap="round"/>
+        <ellipse cx="22" cy="40" rx="13" ry="3" fill="rgba(40,70,30,.18)"/>
+        <polygon points="8,20 22,27 22,39 8,32" fill="var(--gold)"/>
+        <polygon points="22,27 36,20 36,32 22,39" fill="var(--gold-dark)"/>
+        <polygon points="8,20 22,13 36,20 22,27" fill="var(--gold-light)"/>
+        <circle cx="22" cy="29" r="3.2" fill="#FFFFFF"/>
       </svg>`;
   }
 
@@ -660,13 +659,11 @@
   function postSvg(){
     return `
       <svg class="post-icon" viewBox="0 0 44 44">
-        <ellipse cx="22" cy="40" rx="14" ry="3" fill="rgba(74,64,56,.2)"/>
-        <rect x="5" y="13" width="34" height="23" rx="5" fill="#FFFFFF" stroke="var(--ink)" stroke-width="2"/>
-        <path d="M5 16 L22 29 L22 16 Z" fill="rgba(95,135,160,.14)"/>
-        <path d="M22 16 L22 29 L39 16 Z" fill="rgba(95,135,160,.26)"/>
-        <path d="M5 16 L22 29 L39 16" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>
-        <circle cx="31" cy="28" r="7.5" fill="var(--accent-coral-deep)" stroke="var(--ink)" stroke-width="1.5"/>
-        <path d="M27.5 28.5 l2.4 2.6 l4.8 -5.6" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse cx="22" cy="40" rx="14" ry="3" fill="rgba(40,70,30,.18)"/>
+        <rect x="5" y="13" width="34" height="23" rx="8" fill="#FFFFFF" stroke="var(--accent-green)" stroke-width="2.4"/>
+        <path d="M7 17 L22 29 L37 17" fill="none" stroke="var(--accent-green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="32" cy="29" r="7.5" fill="var(--accent-coral)"/>
+        <path d="M28.5 29.5 l2.4 2.6 l4.8 -5.6" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`;
   }
 
