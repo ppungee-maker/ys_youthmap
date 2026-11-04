@@ -97,20 +97,93 @@
     padding:18px 16px 24px;
   }
 
-  .key-row{
+  .chip-row{
     display:flex;
-    flex-wrap:wrap;
-    gap:10px 18px;
-    justify-content:center;
-    padding:4px 6px 18px;
+    gap:8px;
+    overflow-x:auto;
+    padding:2px 2px 16px;
+    margin-bottom:12px;
     border-bottom:2px dashed #ECE2CC;
-    margin-bottom:14px;
-    font-size:13px;
-    font-weight:700;
-    color:var(--ink-soft);
+    scrollbar-width:none;
   }
-  .key-row .item{display:flex;align-items:center;gap:7px;}
-  .key-dot{width:14px;height:14px;border-radius:5px;flex:none;}
+  .chip-row::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:none;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    border:2px solid #ECE2CC;
+    background:var(--card-bg);
+    border-radius:999px;
+    padding:7px 15px;
+    font-family:'Jua',sans-serif;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    opacity:.6;
+    box-shadow:0 3px 8px -5px rgba(54,64,45,.6);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .chip .cd{width:11px;height:11px;border-radius:50%;flex:none;background:#CFC9B6;}
+  .chip[aria-pressed="true"]{
+    opacity:1;
+    color:var(--ink);
+    border-color:var(--c);
+    background:var(--cream);
+  }
+  .chip[aria-pressed="true"] .cd{background:var(--c);}
+  .chip:focus-visible{outline:3px solid var(--accent-coral);outline-offset:2px;}
+
+  .school-dot{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    width:26px;height:26px;
+    border:none;background:none;padding:0;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .school-dot i{
+    display:block;
+    width:10px;height:10px;
+    margin:8px;
+    border-radius:50%;
+    background:var(--c);
+    box-shadow:0 0 0 2.5px #FFFFFF, 0 2px 3px rgba(54,64,45,.4);
+  }
+  .school-dot:hover i{transform:scale(1.25);}
+  .school-dot:focus-visible{outline:3px solid var(--accent-coral);outline-offset:0;border-radius:50%;}
+
+  .weather-card{
+    position:absolute;
+    left:14px;bottom:14px;
+    z-index:6;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    padding:10px 12px 11px;
+    border-radius:26px;
+    background:var(--card-bg);
+    border:2px solid var(--sage);
+    box-shadow:0 6px 16px -8px rgba(54,64,45,.6);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .weather-card:focus-visible{outline:3px solid var(--accent-coral);outline-offset:2px;}
+  .weather-card svg{width:38px;height:30px;display:block;}
+  .wx-temp{font-family:'Jua',sans-serif;font-size:19px;color:var(--ink);line-height:1.1;}
+  .wx-badge{
+    font-family:'Jua',sans-serif;
+    font-size:11.5px;
+    color:#FFFFFF;
+    background:var(--accent-green);
+    border-radius:999px;
+    padding:3px 11px;
+    margin-top:2px;
+  }
+  .wx-rows{display:grid;gap:7px;margin:2px 0 0;}
+  .wx-rows div{display:flex;justify-content:space-between;gap:12px;font-size:14px;}
+  .wx-rows b{font-weight:700;}
   .map-caption{
     text-align:center;font-size:12px;color:var(--ink-soft);margin:0 0 10px;
   }
@@ -144,6 +217,12 @@
   }
   .pin.flash{z-index:5;}
   .pin.flash .pin-glyph{animation:pinFlash .8s ease-in-out 2;}
+  .school-dot.flash{z-index:5;}
+  .school-dot.flash i{animation:dotFlash .8s ease-in-out 2;}
+  @keyframes dotFlash{
+    0%,100%{transform:scale(1);box-shadow:0 0 0 2.5px #FFFFFF, 0 2px 3px rgba(54,64,45,.4);}
+    50%{transform:scale(1.8);box-shadow:0 0 0 3px #FFFFFF, 0 0 12px var(--accent-coral);}
+  }
   @keyframes pinFlash{
     0%,100%{transform:scale(1);filter:drop-shadow(0 3px 2px rgba(74,64,56,.3));}
     50%{transform:scale(1.3);filter:drop-shadow(0 0 14px var(--accent-coral)) drop-shadow(0 3px 2px rgba(74,64,56,.3));}
@@ -357,11 +436,7 @@
   </div>
 
   <div class="sheet">
-    <div class="key-row">
-      <span class="item"><span class="key-dot" style="background:#78B6E8"></span>번호 건물 = 청소년 시설</span>
-      <span class="item"><span class="key-dot" style="background:var(--gold)"></span>보물상자 = 급식카드 가맹점</span>
-      <span class="item"><span class="key-dot" style="background:var(--accent-coral)"></span>우체국 = 새 소식</span>
-    </div>
+    <div class="chip-row" id="chipRow" role="group" aria-label="지도에 표시할 항목 고르기"></div>
     <p class="map-caption">실제 행정동 경계 · 유성대로·대덕대로·북유성대로 · 갑천 반영</p>
 
     <div class="map-wrap" id="mapWrap">
@@ -521,6 +596,7 @@
 
   <footer class="notes">
     경계·도로는 통계청 행정동 경계와 실제 간선도로(유성대로·대덕대로·북유성대로)를 바탕으로 그렸어요. 시설 정보는 2026년 10월 기준 도로명주소로 확인했어요.
+    시설 11곳과 학교 69곳은 실제 위경도를 섬 윤곽에 맞춰 찍은 자리예요 — 서로 겹치는 곳끼리는 조금씩 떨어뜨려 놔서 평균 100m쯤 밀려 있어요. 학교 목록은 OpenStreetMap, 날씨·미세먼지는 Open-Meteo에서 가져와요.
     아이누리카드(급식카드)는 2025년부터 BC카드 가맹 일반음식점 전체(대전 23,992곳)로 사용처가 넓어졌어요 — 예전처럼 정해진 가맹점만 찾아다닐 필요 없이, 편의점은 물론 왠만한 식당에서도 바로 쓸 수 있어요.
     더 궁금하면 <a href="http://dreamtree.shinhancard.com/waf/opendatam" target="_blank" rel="noopener">아이누리카드 가맹점 조회</a>에서, 또는 근처 CU·GS25·세븐일레븐에서 바로 물어보세요.
   </footer>
@@ -533,27 +609,27 @@
 <script>
   const FACILITIES = [
     {id:'f1', num:1, name:'엑스포과학공원·한빛탑', cat:'행사거점', dong:'도룡동(신성동)', region:4,
-      left:68, top:37, lat:36.3744134, lng:127.3870881, desc:'한빛탑 아래 광장에서 청소년 대상 과학·문화 행사가 자주 열려요.'},
+      left:76.3, top:53.01, lat:36.3744134, lng:127.3870881, desc:'한빛탑 아래 광장에서 청소년 대상 과학·문화 행사가 자주 열려요.'},
     {id:'f2', num:2, name:'구즉청소년문화의집', cat:'문화의집', dong:'봉산동(구즉동)', region:5,
-      left:74, top:20, lat:36.4446094, lng:127.3839063, desc:'VR체험실, 댄스연습실, 미디어실을 갖춘 테크노밸리의 청소년 아지트예요.'},
+      left:74.77, top:26.42, lat:36.4446094, lng:127.3839063, desc:'VR체험실, 댄스연습실, 미디어실을 갖춘 테크노밸리의 청소년 아지트예요.'},
     {id:'f3', num:3, name:'다함께돌봄센터 유성아이 1호점', cat:'돌봄시설', dong:'하기동(노은2동)', region:3,
-      left:30, top:45, lat:36.3893275, lng:127.3229048, desc:'송림마을3단지 안에 있는 방과 후 동네 돌봄 공간이에요.'},
+      left:45.37, top:47.36, lat:36.3893275, lng:127.3229048, desc:'송림마을3단지 안에 있는 방과 후 동네 돌봄 공간이에요.'},
     {id:'f4', num:4, name:'국립중앙과학관', cat:'과학관', dong:'구성동(온천2동)', region:2,
-      left:64, top:48, lat:36.3752581, lng:127.3755339, desc:'청소년 과학축제와 체험전이 자주 열리는 과학의 전당이에요.'},
+      left:70.73, top:52.69, lat:36.3752581, lng:127.3755339, desc:'청소년 과학축제와 체험전이 자주 열리는 과학의 전당이에요.'},
     {id:'f5', num:5, name:'유성구청소년수련관', cat:'수련관', dong:'죽동(온천2동)', region:2,
-      left:48, top:50, lat:36.3806509, lng:127.3238100, desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
+      left:45.8, top:49.55, lat:36.3806509, lng:127.3238100, desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
     {id:'f6', num:6, name:'유성구청소년상담복지센터', cat:'상담복지', dong:'죽동(온천2동)', region:2,
-      left:36, top:54, lat:36.3804952, lng:127.3236602, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
+      left:42.03, top:52.21, lat:36.3804952, lng:127.3236602, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
     {id:'f7', num:7, name:'유성구미래교육지원센터', cat:'진로체험', dong:'죽동(온천2동)', region:2,
-      left:68, top:55, lat:36.3806000, lng:127.3237300, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
+      left:49.46, top:52.17, lat:36.3806000, lng:127.3237300, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
     {id:'f8', num:8, name:'학교밖청소년지원센터 꿈드림', cat:'학교밖지원', dong:'어은동(온천2동)', region:2,
-      left:42, top:60, lat:36.3622077, lng:127.3550488, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
+      left:60.86, top:57.64, lat:36.3622077, lng:127.3550488, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
     {id:'f9', num:9, name:'장대청소년문화의집', cat:'문화의집', dong:'장대동(온천2동)', region:2,
-      left:72, top:62, lat:36.3578825, lng:127.3366933, desc:'동아리 활동과 문화 프로그램이 가득한 작은 아지트예요.'},
+      left:52.01, top:59.28, lat:36.3578825, lng:127.3366933, desc:'동아리 활동과 문화 프로그램이 가득한 작은 아지트예요.'},
     {id:'f10', num:10, name:'다함께돌봄센터 유성아이 2호점', cat:'돌봄시설', dong:'계산동(학하동)', region:1,
-      left:33, top:66, lat:36.3399435, lng:127.3026514, desc:'오투그란데미학 단지 안, 학하동 아이들의 방과 후 쉼터예요.'},
+      left:35.61, top:66.07, lat:36.3399435, lng:127.3026514, desc:'오투그란데미학 단지 안, 학하동 아이들의 방과 후 쉼터예요.'},
     {id:'f11', num:11, name:'다함께돌봄센터 유성아이 11호점', cat:'돌봄시설', dong:'원신흥동', region:1,
-      left:60, top:68, lat:36.3383013, lng:127.3377191, desc:'갑천2 트리풀시티 단지 안에 2026년 새로 문을 연 돌봄 공간이에요.'},
+      left:52.51, top:66.69, lat:36.3383013, lng:127.3377191, desc:'갑천2 트리풀시티 단지 안에 2026년 새로 문을 연 돌봄 공간이에요.'},
   ];
 
   const CHESTS = [
@@ -562,6 +638,80 @@
     {id:'c3', region:3, label:'노은 신시가지', left:40, top:42},
     {id:'c4', region:4, label:'대덕 연구소숲', left:58, top:34},
     {id:'c5', region:5, label:'테크노밸리 등대', left:82, top:30},
+  ];
+
+  // 학교 좌표는 OSM 실측 위경도를 섬 외곽선(실제 행정동 경계 기준)에 맞춰 변환한 값이다.
+  // 겹침 해소로 평균 40m, 최대 143m 밀려 있다.
+  const SCHOOLS = [
+    {lv:'초', name:'계산초등학교', left:33.23, top:65.04, lat:36.34388, lng:127.299321},
+    {lv:'초', name:'교촌초등학교', left:42.47, top:78.98, lat:36.305881, lng:127.316892},
+    {lv:'초', name:'구즉초등학교', left:74.19, top:27.92, lat:36.440641, lng:127.382707},
+    {lv:'초', name:'금성초등학교', left:58.47, top:47.47, lat:36.389048, lng:127.350084},
+    {lv:'초', name:'대덕초등학교', left:73.58, top:49.16, lat:36.385176, lng:127.381385},
+    {lv:'초', name:'대전지족초등학교', left:43.18, top:51.68, lat:36.380627, lng:127.317255},
+    {lv:'초', name:'대전관평초등학교', left:76.43, top:34.57, lat:36.423952, lng:127.387228},
+    {lv:'초', name:'대전노은초등학교', left:44.87, top:55.29, lat:36.369018, lng:127.321362},
+    {lv:'초', name:'대전두리초등학교', left:74.74, top:32.37, lat:36.428843, lng:127.382362},
+    {lv:'초', name:'대전문지초등학교', left:82.34, top:45.31, lat:36.395842, lng:127.39955},
+    {lv:'초', name:'대전반석초등학교', left:41.08, top:46.97, lat:36.389979, lng:127.313146},
+    {lv:'초', name:'대전배울초등학교', left:74.7, top:35.12, lat:36.422007, lng:127.3845},
+    {lv:'초', name:'대전복용초등학교', left:47.67, top:67.99, lat:36.334872, lng:127.327692},
+    {lv:'초', name:'대전봉명초등학교', left:54.67, top:62.47, lat:36.349469, lng:127.343587},
+    {lv:'초', name:'대전상원초등학교', left:49.95, top:65.52, lat:36.342233, lng:127.333723},
+    {lv:'초', name:'대전새미래초등학교', left:35.35, top:51.15, lat:36.379293, lng:127.303197},
+    {lv:'초', name:'대전송강초등학교', left:74.87, top:30.45, lat:36.433972, lng:127.384127},
+    {lv:'초', name:'대전송림초등학교', left:50.02, top:47.6, lat:36.388697, lng:127.332562},
+    {lv:'초', name:'대전어은초등학교', left:60.43, top:57.23, lat:36.364774, lng:127.353626},
+    {lv:'초', name:'대전용산초등학교', left:79.91, top:36.12, lat:36.419836, lng:127.395305},
+    {lv:'초', name:'대전자운초등학교', left:52.81, top:38.37, lat:36.412018, lng:127.33835},
+    {lv:'초', name:'대전전민초등학교', left:86.01, top:43.97, lat:36.398473, lng:127.407148},
+    {lv:'초', name:'대전죽동초등학교', left:51.44, top:54.54, lat:36.370386, lng:127.335505},
+    {lv:'초', name:'대전하기초등학교', left:42.72, top:47.74, lat:36.388679, lng:127.32166},
+    {lv:'초', name:'대정초등학교', left:45.59, top:75.47, lat:36.31515, lng:127.323367},
+    {lv:'초', name:'봉암초등학교', left:56.83, top:57.15, lat:36.363978, lng:127.347879},
+    {lv:'초', name:'상대초등학교', left:52.58, top:62.17, lat:36.34766, lng:127.336421},
+    {lv:'초', name:'상지초등학교', left:44.98, top:52.79, lat:36.375399, lng:127.321945},
+    {lv:'초', name:'수정초등학교', left:40.82, top:56.23, lat:36.365913, lng:127.313475},
+    {lv:'초', name:'외삼초등학교', left:39.36, top:46.4, lat:36.392704, lng:127.31063},
+    {lv:'초', name:'원신흥초등학교', left:54.82, top:65.74, lat:36.340823, lng:127.342525},
+    {lv:'초', name:'유성초등학교', left:49.68, top:58.29, lat:36.362032, lng:127.333788},
+    {lv:'초', name:'장대초등학교', left:54.7, top:58.03, lat:36.361553, lng:127.339367},
+    {lv:'초', name:'학하초등학교', left:40.09, top:68.24, lat:36.334209, lng:127.311952},
+    {lv:'초', name:'흥도초등학교', left:52.95, top:68.35, lat:36.334015, lng:127.338601},
+    {lv:'중', name:'대덕중학교', left:72.42, top:52.02, lat:36.378792, lng:127.377731},
+    {lv:'중', name:'대전관평중학교', left:76.97, top:33.39, lat:36.424997, lng:127.387862},
+    {lv:'중', name:'대전노은중학교', left:46.49, top:54.61, lat:36.369788, lng:127.324178},
+    {lv:'중', name:'대전두리중학교', left:72.76, top:32.43, lat:36.428797, lng:127.381221},
+    {lv:'중', name:'대전문지중학교', left:83.1, top:43.87, lat:36.396975, lng:127.399482},
+    {lv:'중', name:'대전봉명중학교', left:56.64, top:62.46, lat:36.349479, lng:127.344909},
+    {lv:'중', name:'대전새미래중학교', left:37.32, top:51.2, lat:36.379233, lng:127.305135},
+    {lv:'중', name:'대전송강중학교', left:73.83, top:29.21, lat:36.437254, lng:127.381959},
+    {lv:'중', name:'대전외삼중학교', left:39.1, top:45.18, lat:36.393879, lng:127.310259},
+    {lv:'중', name:'대전자운중학교', left:52.81, top:39.62, lat:36.410798, lng:127.338354},
+    {lv:'중', name:'대전장대중학교', left:52.8, top:58.83, lat:36.360482, lng:127.338746},
+    {lv:'중', name:'대전전민중학교', left:85.27, top:42.83, lat:36.401118, lng:127.405791},
+    {lv:'중', name:'대전하기중학교', left:45.11, top:49.11, lat:36.385685, lng:127.322353},
+    {lv:'중', name:'덕명중학교', left:35.54, top:65.73, lat:36.345761, lng:127.302642},
+    {lv:'중', name:'성덕중학교', left:55.98, top:48.46, lat:36.386435, lng:127.344922},
+    {lv:'중', name:'어은중학교', left:58.61, top:56.67, lat:36.365724, lng:127.353053},
+    {lv:'중', name:'원신흥중학교', left:56.17, top:68.67, lat:36.333095, lng:127.345314},
+    {lv:'중', name:'유성중학교', left:49.13, top:64.38, lat:36.345808, lng:127.334807},
+    {lv:'중', name:'지족중학교', left:45.11, top:51.54, lat:36.377807, lng:127.320655},
+    {lv:'고', name:'대덕고등학교', left:73.42, top:47.92, lat:36.387256, lng:127.381176},
+    {lv:'고', name:'대덕소프트웨어마이스터고등학교', left:64.72, top:46.54, lat:36.391505, lng:127.363069},
+    {lv:'고', name:'대전예술고등학교', left:49.68, top:63.2, lat:36.346351, lng:127.333045},
+    {lv:'고', name:'대전과학고등학교', left:68.53, top:53.2, lat:36.373915, lng:127.37097},
+    {lv:'고', name:'대전노은고등학교', left:43.0, top:54.98, lat:36.369031, lng:127.319568},
+    {lv:'고', name:'대전반석고등학교', left:40.19, top:48.06, lat:36.386691, lng:127.313566},
+    {lv:'고', name:'대전용산고등학교', left:81.06, top:35.1, lat:36.420881, lng:127.396236},
+    {lv:'고', name:'대전전민고등학교', left:81.22, top:44.28, lat:36.39796, lng:127.399088},
+    {lv:'고', name:'대전지족고등학교', left:41.27, top:51.9, lat:36.37791, lng:127.315698},
+    {lv:'고', name:'대전체육중고등학교', left:54.7, top:67.56, lat:36.336023, lng:127.342267},
+    {lv:'고', name:'도안고등학교', left:52.33, top:67.19, lat:36.336907, lng:127.33738},
+    {lv:'고', name:'유성고등학교', left:50.65, top:62.14, lat:36.349714, lng:127.335377},
+    {lv:'고', name:'유성생명과학고등학교', left:47.77, top:63.41, lat:36.346988, lng:127.328046},
+    {lv:'고', name:'유성여자고등학교', left:46.27, top:50.1, lat:36.383368, lng:127.32817},
+    {lv:'고', name:'중일고등학교', left:77.43, top:35.63, lat:36.420299, lng:127.389433},
   ];
 
   const NOTICES = [
@@ -690,6 +840,7 @@
     legend.appendChild(row);
   });
 
+  const chestButtons = [];
   CHESTS.forEach(ch=>{
     const btn = document.createElement('button');
     btn.className = 'chest-btn';
@@ -699,7 +850,73 @@
     btn.innerHTML = chestSvg();
     btn.addEventListener('click', ()=>openChest(ch));
     pinLayer.appendChild(btn);
+    chestButtons.push(btn);
   });
+
+  const SCHOOL_COLOR = {'초':'#F4A64B','중':'#3FA9A0','고':'#6C7FD8'};
+  const SCHOOL_LABEL = {'초':'초등학교','중':'중학교','고':'고등학교'};
+  const schoolButtons = [];
+  SCHOOLS.forEach(sc=>{
+    const btn = document.createElement('button');
+    btn.className = 'school-dot';
+    btn.style.left = sc.left + '%';
+    btn.style.top = sc.top + '%';
+    btn.style.setProperty('--c', SCHOOL_COLOR[sc.lv]);
+    btn.setAttribute('aria-label', sc.name);
+    btn.innerHTML = '<i></i>';
+    btn.addEventListener('click', ()=>openSchool(sc));
+    pinLayer.appendChild(btn);
+    schoolButtons.push({el:btn, sc});
+  });
+
+  const LAYERS = [
+    {id:'facility', label:'청소년시설', color:'#78B6E8', on:true},
+    {id:'chest',    label:'급식카드',   color:'var(--gold)', on:true},
+    {id:'초',       label:'초등학교',   color:SCHOOL_COLOR['초'], on:false},
+    {id:'중',       label:'중학교',     color:SCHOOL_COLOR['중'], on:false},
+    {id:'고',       label:'고등학교',   color:SCHOOL_COLOR['고'], on:false},
+  ];
+
+  function loadLayerState(){
+    try{
+      const saved = JSON.parse(localStorage.getItem('yuseong_layers') || '{}');
+      LAYERS.forEach(l=>{ if(typeof saved[l.id] === 'boolean') l.on = saved[l.id]; });
+    }catch(e){}
+  }
+  function saveLayerState(){
+    try{
+      localStorage.setItem('yuseong_layers',
+        JSON.stringify(Object.fromEntries(LAYERS.map(l=>[l.id, l.on]))));
+    }catch(e){}
+  }
+  const layerOn = id => LAYERS.find(l=>l.id===id).on;
+
+  function applyLayers(){
+    Object.values(pinButtons).forEach(b=>{ b.hidden = !layerOn('facility'); });
+    chestButtons.forEach(b=>{ b.hidden = !layerOn('chest'); });
+    schoolButtons.forEach(({el, sc})=>{ el.hidden = !layerOn(sc.lv); });
+    legend.hidden = !layerOn('facility');
+  }
+
+  const chipRow = document.getElementById('chipRow');
+  LAYERS.forEach(l=>{
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.type = 'button';
+    chip.style.setProperty('--c', l.color);
+    chip.setAttribute('aria-pressed', String(l.on));
+    chip.innerHTML = `<span class="cd"></span>${l.label}`;
+    chip.addEventListener('click', ()=>{
+      l.on = !l.on;
+      chip.setAttribute('aria-pressed', String(l.on));
+      applyLayers();
+      saveLayerState();
+    });
+    chipRow.appendChild(chip);
+  });
+  loadLayerState();
+  chipRow.querySelectorAll('.chip').forEach((chip,i)=> chip.setAttribute('aria-pressed', String(LAYERS[i].on)));
+  applyLayers();
 
   const postBtn = document.createElement('button');
   postBtn.className = 'post-btn';
@@ -777,42 +994,64 @@
   }
 
   function showNearbyList(lat, lng){
-    const ranked = FACILITIES
-      .map(fac => ({fac, dist: haversine(lat, lng, fac.lat, fac.lng)}))
-      .sort((a, b) => a.dist - b.dist);
+    const pool = [];
+    if(layerOn('facility')){
+      FACILITIES.forEach(fac => pool.push({
+        key:'f:'+fac.id,
+        badge:`<span class="legend-num" style="background:${REGION_VAR(fac.region)}">${fac.num}</span>`,
+        name:fac.name, meta:`${fac.cat} · ${fac.dong}`,
+        dist:haversine(lat, lng, fac.lat, fac.lng),
+      }));
+    }
+    SCHOOLS.forEach((sc, i) => {
+      if(!layerOn(sc.lv)) return;
+      pool.push({
+        key:'s:'+i,
+        badge:`<span class="legend-num" style="background:${SCHOOL_COLOR[sc.lv]}">${sc.lv}</span>`,
+        name:sc.name, meta:SCHOOL_LABEL[sc.lv],
+        dist:haversine(lat, lng, sc.lat, sc.lng),
+      });
+    });
 
-    const rows = ranked.map(({fac, dist})=> `
-      <button class="near-item" data-id="${fac.id}">
-        <span class="legend-num" style="background:${REGION_VAR(fac.region)}">${fac.num}</span>
+    if(!pool.length){
+      showLocateMessage('지금 지도에 켜 둔 항목이 없어요. 위쪽 버튼으로 청소년시설이나 학교를 켜 주세요.');
+      return;
+    }
+
+    const ranked = pool.sort((a, b) => a.dist - b.dist).slice(0, 10);
+    const rows = ranked.map(r => `
+      <button class="near-item" data-key="${r.key}">
+        ${r.badge}
         <span class="legend-text">
-          <span class="name">${fac.name}</span>
-          <span class="meta">${fac.cat} · ${fac.dong}</span>
+          <span class="name">${r.name}</span>
+          <span class="meta">${r.meta}</span>
         </span>
-        <span class="near-dist">${formatDistance(dist)}</span>
+        <span class="near-dist">${formatDistance(r.dist)}</span>
       </button>`).join('');
 
     modalInner.innerHTML = `
-      <span class="modal-tag" style="background:var(--accent-green)">내 위치에서 가까운 시설</span>
+      <span class="modal-tag" style="background:var(--accent-green)">내 위치에서 가까운 곳</span>
       <h3>가까운 순서로 보여드려요</h3>
       <div class="near-list">${rows}</div>
       <button class="modal-close" id="closeBtn">닫기</button>`;
     bindClose();
     modalInner.querySelectorAll('.near-item').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const fac = FACILITIES.find(f => f.id === btn.dataset.id);
+        const [kind, id] = btn.dataset.key.split(':');
         closeModal();
-        flashPin(fac);
+        flashMarker(kind === 'f'
+          ? pinButtons[id]
+          : schoolButtons[Number(id)].el);
       });
     });
     if(!modal.open) modal.showModal();
   }
 
-  function flashPin(fac){
-    const pinBtn = pinButtons[fac.id];
-    if(!pinBtn) return;
-    pinBtn.scrollIntoView({behavior:'smooth', block:'center'});
-    pinBtn.classList.add('flash');
-    setTimeout(()=> pinBtn.classList.remove('flash'), 1600);
+  function flashMarker(el){
+    if(!el) return;
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.classList.add('flash');
+    setTimeout(()=> el.classList.remove('flash'), 1600);
   }
 
   function openFacility(fac){
@@ -821,6 +1060,16 @@
       <h3>${fac.name}</h3>
       <div class="addr">${fac.dong}</div>
       <p>${fac.desc}</p>
+      <button class="modal-close" id="closeBtn">닫기</button>`;
+    bindClose();
+    modal.showModal();
+  }
+
+  function openSchool(sc){
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:${SCHOOL_COLOR[sc.lv]}">${SCHOOL_LABEL[sc.lv]}</span>
+      <h3>${sc.name}</h3>
+      <p>지도 위 점은 실제 위치를 섬 그림에 맞춰 옮긴 자리예요. 겹치는 학교끼리는 조금씩 떨어뜨려 놨어요.</p>
       <button class="modal-close" id="closeBtn">닫기</button>`;
     bindClose();
     modal.showModal();
@@ -867,6 +1116,98 @@
     try{ localStorage.setItem('yuseong_lastSeenNotice', id); }
     catch(e){}
   }
+  // 유성구청 부근 고정 좌표 — 날씨는 위치 권한 없이도 보여야 해서 사용자 위치를 쓰지 않는다.
+  const WX_LAT = 36.3622, WX_LNG = 127.3562;
+
+  const WX_ICON = {
+    sun:`<svg viewBox="0 0 44 34"><circle cx="22" cy="17" r="10" fill="var(--gold)"/>
+      <g stroke="var(--gold)" stroke-width="3" stroke-linecap="round">
+      <path d="M22 2v4M22 28v4M7 17H3M41 17h-4M11.4 6.4l2.8 2.8M29.8 24.8l2.8 2.8M32.6 6.4l-2.8 2.8M14.2 24.8l-2.8 2.8"/></g></svg>`,
+    partly:`<svg viewBox="0 0 44 34"><circle cx="29" cy="12" r="8" fill="var(--gold)"/>
+      <path d="M12 29a7 7 0 0 1 0-14 9 9 0 0 1 17 2 6 6 0 0 1-1 12Z" fill="#E8EEF2"/>
+      <path d="M12 29a7 7 0 0 1 0-14 9 9 0 0 1 8.5 6Z" fill="#F7FAFC"/></svg>`,
+    cloud:`<svg viewBox="0 0 44 34"><path d="M13 28a8 8 0 0 1 0-16 10 10 0 0 1 19 2 7 7 0 0 1-1 14Z" fill="#DCE5EB"/>
+      <path d="M13 28a8 8 0 0 1 0-16 10 10 0 0 1 9.5 7Z" fill="#F2F6F9"/></svg>`,
+    rain:`<svg viewBox="0 0 44 34"><path d="M13 22a8 8 0 0 1 0-16 10 10 0 0 1 19 2 7 7 0 0 1-1 14Z" fill="#DCE5EB"/>
+      <g stroke="var(--river-dark)" stroke-width="3" stroke-linecap="round">
+      <path d="M15 26l-2 5M23 26l-2 5M31 26l-2 5"/></g></svg>`,
+    snow:`<svg viewBox="0 0 44 34"><path d="M13 22a8 8 0 0 1 0-16 10 10 0 0 1 19 2 7 7 0 0 1-1 14Z" fill="#DCE5EB"/>
+      <g fill="#8FD6EE"><circle cx="14" cy="29" r="2.6"/><circle cx="22" cy="31" r="2.6"/><circle cx="30" cy="29" r="2.6"/></g></svg>`,
+    storm:`<svg viewBox="0 0 44 34"><path d="M13 21a8 8 0 0 1 0-16 10 10 0 0 1 19 2 7 7 0 0 1-1 14Z" fill="#CBD6DE"/>
+      <path d="M23 21l-7 9h5l-2 7 8-10h-5l3-6Z" fill="var(--gold)"/></svg>`,
+  };
+
+  function wxIconFor(code){
+    if(code === 0) return 'sun';
+    if(code <= 2) return 'partly';
+    if(code <= 48) return 'cloud';
+    if(code >= 95) return 'storm';
+    if((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow';
+    return 'rain';
+  }
+  const WX_TEXT = {sun:'맑음', partly:'구름 조금', cloud:'흐림', rain:'비', snow:'눈', storm:'천둥번개'};
+
+  // 환경부 대기환경지수 구간
+  function dustGrade(pm10, pm25){
+    const g10 = pm10 <= 30 ? 0 : pm10 <= 80 ? 1 : pm10 <= 150 ? 2 : 3;
+    const g25 = pm25 <= 15 ? 0 : pm25 <= 35 ? 1 : pm25 <= 75 ? 2 : 3;
+    const g = Math.max(g10, g25);
+    return [
+      {t:'좋음',     c:'var(--accent-green)'},
+      {t:'보통',     c:'var(--gold-dark)'},
+      {t:'나쁨',     c:'var(--accent-coral-deep)'},
+      {t:'매우나쁨', c:'#A33C2A'},
+    ][g];
+  }
+
+  const weather = {};
+  const weatherCard = document.createElement('button');
+  weatherCard.className = 'weather-card';
+  weatherCard.type = 'button';
+  weatherCard.hidden = true;
+  document.getElementById('mapWrap').appendChild(weatherCard);
+  weatherCard.addEventListener('click', openWeather);
+
+  function openWeather(){
+    const g = dustGrade(weather.pm10, weather.pm25);
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:var(--accent-green)">지금 유성구</span>
+      <h3>${weather.temp}° ${WX_TEXT[weather.icon]}</h3>
+      <div class="wx-rows">
+        <div><span>미세먼지 (PM10)</span><b>${Math.round(weather.pm10)} ㎍/㎥</b></div>
+        <div><span>초미세먼지 (PM2.5)</span><b>${Math.round(weather.pm25)} ㎍/㎥</b></div>
+        <div><span>대기질</span><b style="color:${g.c}">${g.t}</b></div>
+      </div>
+      <p style="margin-top:12px;font-size:12.5px;color:var(--ink-soft)">유성구청 부근 기준이에요. 자료는 Open-Meteo에서 가져와요.</p>
+      <button class="modal-close" id="closeBtn">닫기</button>`;
+    bindClose();
+    modal.showModal();
+  }
+
+  async function loadWeather(){
+    try{
+      const [wx, air] = await Promise.all([
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LNG}&current=temperature_2m,weather_code&timezone=Asia%2FSeoul`).then(r=>r.json()),
+        fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${WX_LAT}&longitude=${WX_LNG}&current=pm10,pm2_5&timezone=Asia%2FSeoul`).then(r=>r.json()),
+      ]);
+      weather.temp = Math.round(wx.current.temperature_2m);
+      weather.icon = wxIconFor(wx.current.weather_code);
+      weather.pm10 = air.current.pm10;
+      weather.pm25 = air.current.pm2_5;
+      const g = dustGrade(weather.pm10, weather.pm25);
+      weatherCard.innerHTML = `
+        ${WX_ICON[weather.icon]}
+        <span class="wx-temp">${weather.temp}°</span>
+        <span class="wx-badge" style="background:${g.c}">${g.t}</span>`;
+      weatherCard.setAttribute('aria-label',
+        `지금 유성구 ${weather.temp}도 ${WX_TEXT[weather.icon]}, 미세먼지 ${g.t}. 자세히 보기`);
+      weatherCard.hidden = false;
+    }catch(e){
+      // 날씨를 못 가져오면 카드를 숨긴 채로 둔다 — 지도 자체는 영향을 받지 않는다.
+    }
+  }
+  loadWeather();
+
   function refreshBadge(){
     const lastSeen = getLastSeen();
     const unread = NOTICES.filter(n => n.id > lastSeen).length;
