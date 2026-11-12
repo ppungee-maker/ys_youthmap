@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>유성구 보물찾기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -428,6 +431,26 @@
     padding:1px 7px;
     border-radius:999px;
   }
+  /* 폰에서는 지도만 좁아지고 마커는 CSS px로 고정이라 상대적으로 2배가 된다.
+     지도 폭에 맞춰 마커를 줄이고, 바깥 여백을 지도 쪽으로 돌려준다. */
+  @media (max-width:560px){
+    .page{padding:18px 10px 40px;}
+    .sheet{padding:14px 11px 18px;border-radius:24px;}
+    .pin-glyph{width:34px;height:39px;}
+    .chest-icon,.post-icon{width:30px;height:30px;}
+    .badge{min-width:16px;height:16px;font-size:10px;top:-3px;right:-5px;box-shadow:0 0 0 2px var(--land);}
+    .school-dot{width:36px;height:36px;}
+    .school-dot i{width:11px;height:11px;margin:12.5px;}
+    .locate-btn{width:40px;height:40px;right:10px;top:10px;}
+    .locate-btn svg{width:22px;height:22px;}
+    .weather-card{left:10px;bottom:10px;padding:8px 10px 9px;border-radius:22px;}
+    .weather-card svg{width:30px;height:24px;}
+    .wx-temp{font-size:16px;}
+    .wx-badge{font-size:10.5px;padding:2px 9px;}
+    .masthead{gap:10px;}
+    .big-find{padding:13px 14px;border-radius:19px;}
+  }
+
   .notice .t{font-weight:700;font-size:14.5px;margin:3px 0 4px;}
   .notice .b{font-size:13.5px;line-height:1.6;color:var(--ink);}
 
@@ -653,9 +676,9 @@
     {id:'f5', num:5, name:'유성구청소년수련관', cat:'수련관', dong:'죽동(온천2동)', region:2,
       left:45.8, top:49.55, lat:36.3806509, lng:127.3238100, desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
     {id:'f6', num:6, name:'유성구청소년상담복지센터', cat:'상담복지', dong:'죽동(온천2동)', region:2,
-      left:42.03, top:52.21, lat:36.3804952, lng:127.3236602, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
+      left:40.6, top:52.75, lat:36.3804952, lng:127.3236602, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
     {id:'f7', num:7, name:'유성구미래교육지원센터', cat:'진로체험', dong:'죽동(온천2동)', region:2,
-      left:49.46, top:52.17, lat:36.3806000, lng:127.3237300, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
+      left:51.0, top:52.72, lat:36.3806000, lng:127.3237300, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
     {id:'f8', num:8, name:'학교밖청소년지원센터 꿈드림', cat:'학교밖지원', dong:'어은동(온천2동)', region:2,
       left:60.86, top:57.64, lat:36.3622077, lng:127.3550488, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
     {id:'f9', num:9, name:'장대청소년문화의집', cat:'문화의집', dong:'장대동(온천2동)', region:2,
