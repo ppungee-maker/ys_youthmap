@@ -847,19 +847,25 @@
 
         </g>
 
-        <!-- compass -->
-        <g transform="translate(1500,2440)">
-          <circle r="68" fill="#FFFFFF" stroke="var(--ink)" stroke-width="3.5"/>
-          <g stroke="var(--sage)" stroke-width="3" stroke-linecap="round">
-            <line x1="0" y1="-56" x2="0" y2="56"/>
-            <line x1="-56" y1="0" x2="56" y2="0"/>
+        <!-- 방위 표시: 공책에 손으로 끄적인 느낌. 원은 일부러 어긋나게 두 번 그었고,
+             선도 살짝 휘어 있다. 전체를 조금 기울여 자처럼 반듯해 보이지 않게 했다. -->
+        <g transform="translate(1500,2440) rotate(-6) scale(1.2)" fill="none"
+           stroke="var(--ink)" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M66,-6 C70,30 42,64 4,67 C-34,70 -66,44 -68,8 C-70,-28 -44,-62 -6,-66 C28,-69 60,-44 65,-12"
+                stroke-width="4" opacity=".92"/>
+          <path d="M60,-20 C70,14 48,56 10,62 C-26,68 -62,40 -63,4"
+                stroke-width="2.4" opacity=".45"/>
+          <g stroke-width="3" opacity=".55" stroke="var(--accent-green)">
+            <path d="M1,-52 C-2,-20 2,18 0,52"/>
+            <path d="M-52,2 C-20,-1 18,3 52,0"/>
           </g>
-          <path d="M0 -56 l10 25 l-20 0 Z" fill="var(--accent-coral-deep)" stroke="var(--ink)" stroke-width="2"/>
-          <g font-family="'Jua',sans-serif" font-size="22" fill="var(--ink)" text-anchor="middle">
-            <text x="0" y="-72">N</text>
-            <text x="78" y="7">E</text>
-            <text x="0" y="92">S</text>
-            <text x="-78" y="7">W</text>
+          <path d="M2,-58 C10,-34 12,-26 14,-20 C4,-24 -8,-23 -16,-18 C-10,-32 -4,-44 2,-58 Z"
+                fill="var(--accent-coral-deep)" stroke-width="3" stroke-linejoin="round"/>
+          <g font-family="'Jua',sans-serif" font-size="24" fill="var(--ink)" stroke="none" text-anchor="middle">
+            <text x="2" y="-74" transform="rotate(-5 2 -74)">N</text>
+            <text x="84" y="9" transform="rotate(7 84 9)">E</text>
+            <text x="-3" y="95" transform="rotate(4 -3 95)">S</text>
+            <text x="-84" y="6" transform="rotate(-8 -84 6)">W</text>
           </g>
         </g>
       </svg>
