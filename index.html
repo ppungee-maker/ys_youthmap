@@ -297,6 +297,51 @@
     padding:3px 11px;
     margin-top:2px;
   }
+  /* 검색 결과를 고르면 모달 대신 이 카드가 뜬다 — 지도를 가리지 않고
+     위치를 먼저 확인한 뒤 길찾기를 고르게 하려는 것. */
+  .place-card{
+    position:fixed;
+    left:50%;bottom:14px;
+    transform:translateX(-50%);
+    z-index:40;
+    width:calc(100% - 28px);
+    max-width:470px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 12px;
+    border-radius:20px;
+    background:var(--card-bg);
+    border:2px solid var(--sage);
+    box-shadow:0 14px 30px -14px rgba(54,64,45,.85);
+  }
+  .pc-dot{width:13px;height:13px;border-radius:50%;flex:none;background:var(--c,var(--accent-green));}
+  .pc-body{
+    flex:1;min-width:0;
+    border:none;background:none;padding:0;
+    text-align:left;font-family:inherit;color:var(--ink);cursor:pointer;
+  }
+  .pc-body b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pc-body small{display:block;font-size:12px;color:var(--ink-soft);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pc-route{
+    flex:none;
+    padding:9px 15px;
+    border-radius:14px;
+    background:var(--accent-green);
+    color:#FFFFFF;
+    font-family:'Jua',sans-serif;
+    font-size:13.5px;
+    text-decoration:none;
+  }
+  .pc-close{
+    flex:none;
+    width:28px;height:28px;
+    border:none;border-radius:50%;
+    background:#ECE2CC;color:var(--ink);
+    font-size:17px;line-height:1;cursor:pointer;
+  }
+
   .route-row{display:flex;gap:8px;margin-top:14px;}
   .route-btn{
     flex:1;
@@ -350,6 +395,12 @@
   }
   .pin.flash{z-index:5;}
   .pin.flash .pin-glyph{animation:pinFlash .8s ease-in-out 2;}
+  /* 장소 카드가 떠 있는 동안 어떤 마커를 가리키는지 계속 보이게 둔다 */
+  .pin.active{z-index:6;}
+  .pin.active .pin-glyph{filter:drop-shadow(0 0 9px var(--accent-coral)) drop-shadow(0 3px 2px rgba(74,64,56,.3));}
+  .school-dot.active{z-index:6;}
+  .school-dot.active i{box-shadow:0 0 0 3px #FFFFFF, 0 0 0 6px var(--accent-coral), 0 2px 4px rgba(54,64,45,.4);}
+
   .school-dot.flash{z-index:5;}
   .school-dot.flash i{animation:dotFlash .8s ease-in-out 2;}
   @keyframes dotFlash{
@@ -743,6 +794,16 @@
   </footer>
 </div>
 
+<div class="place-card" id="placeCard" hidden>
+  <span class="pc-dot" id="pcDot"></span>
+  <button class="pc-body" id="pcBody" type="button">
+    <b id="pcName"></b>
+    <small id="pcMeta"></small>
+  </button>
+  <a class="pc-route" id="pcRoute" target="_blank" rel="noopener">길찾기</a>
+  <button class="pc-close" id="pcClose" type="button" aria-label="닫기">&times;</button>
+</div>
+
 <dialog id="modal">
   <div class="modal-inner" id="modalInner"></div>
 </dialog>
@@ -1087,10 +1148,12 @@
   const SEARCH_INDEX = [
     ...FACILITIES.map(fac => ({
       name:fac.name, meta:`${fac.cat} · ${fac.dong}`, color:REGION_VAR(fac.region),
+      lat:fac.lat, lng:fac.lng,
       layer:'facility', marker:() => pinButtons[fac.id], open:() => openFacility(fac),
     })),
     ...SCHOOLS.map((sc, i) => ({
       name:sc.name, meta:SCHOOL_LABEL[sc.lv], color:SCHOOL_COLOR[sc.lv],
+      lat:sc.lat, lng:sc.lng,
       layer:sc.lv, marker:() => schoolButtons[i].el, open:() => openSchool(sc),
     })),
   ];
@@ -1099,6 +1162,32 @@
     searchResults.hidden = true;
     searchResults.innerHTML = '';
     searchInput.setAttribute('aria-expanded', 'false');
+  }
+
+  const placeCard = document.getElementById('placeCard');
+  let activeMarker = null;
+
+  function setActiveMarker(el){
+    if(activeMarker) activeMarker.classList.remove('active');
+    activeMarker = el || null;
+    if(activeMarker) activeMarker.classList.add('active');
+  }
+  function hidePlaceCard(){
+    placeCard.hidden = true;
+    setActiveMarker(null);
+  }
+  document.getElementById('pcClose').addEventListener('click', hidePlaceCard);
+
+  function showPlaceCard(hit){
+    document.getElementById('pcDot').style.setProperty('--c', hit.color);
+    document.getElementById('pcName').textContent = hit.name;
+    document.getElementById('pcMeta').textContent = hit.meta;
+    document.getElementById('pcRoute').href =
+      `https://map.kakao.com/link/to/${encodeURIComponent(hit.name)},${hit.lat},${hit.lng}`;
+    const body = document.getElementById('pcBody');
+    body.onclick = ()=>{ hidePlaceCard(); hit.open(); };
+    placeCard.hidden = false;
+    setActiveMarker(hit.marker());
   }
 
   function pickSearchHit(hit){
@@ -1113,8 +1202,9 @@
     }
     closeSearch();
     searchInput.blur();
+    // show where it is first; the card offers 길찾기 without covering the map
     flashMarker(hit.marker());
-    hit.open();
+    showPlaceCard(hit);
   }
 
   function runSearch(){
