@@ -11,7 +11,7 @@ There is no build, lint, or test tooling — the entire app is a single static H
 
 ## Architecture
 
-Everything — markup, CSS, inline SVG artwork, and JS — lives in the one `index.html` file. No framework, no external JS libraries, no package manager. Google Fonts (`Jua`, `Gowun Dodum`) are pulled via `<link>` tags.
+Everything — markup, CSS, inline SVG artwork, and JS — lives in the one `index.html` file (~285KB, most of it embedded OSM path data). No framework, no external JS libraries, no package manager. Google Fonts (`Jua`, `Gowun Dodum`) are pulled via `<link>` tags.
 
 **The map is drawn in a storybook style, but its geometry is real.** The big SVG (`#islandSvg`) draws Yuseong-gu's 13 행정동 as a single cohesive island. Only the decorative layer — trees, terrain shading, building icons, compass — is invented. The **outer boundary was traced from the real administrative boundary** (its bounding box has an aspect ratio of 0.589 against the real district's 0.593), and the **road network and waterways are real OSM geometry** projected onto it, not hand-drawn.
 
@@ -24,6 +24,12 @@ Roads come in two passes. The muted context band covers the whole viewBox and is
 The five zone names are wooden signposts rather than flat labels, to suit the forest-adventure framing. Their positions are chosen by a small search that keeps each sign inside the island and clear of markers *while staying near its zone* — a zone name that drifts into the wrong neighbourhood is worse than one that overlaps a pin, so the search weights distance from the original spot heavily. Both roads and waterways are Douglas-Peucker simplified at 3px. Waterways are clipped by the SVG `landClip` path rather than by coordinate, because 갑천 runs *along* the district boundary and a strict point-in-polygon test discards nearly all of it. Road and river name labels are positioned at the point on each road's principal axis (PCA) that sits furthest from any pin — don't hand-place them.
 
 Beware the history here: pin `left`/`top` percentages were originally chosen *by eye* and were off by up to 20% of map width; they were regenerated from real coordinates on 2026-11-04. If you add new markers, derive their position the same way rather than eyeballing. And keep the distinction straight when the user says "실제 지도" — GPS accuracy vs. matching a reference image's visual style are two very different asks, and conflating them has cost several rounds in this project.
+
+**Zoom:** `#mapViewport` wraps the base SVG, the marker layer and the sign overlay, and gets a single `translate/scale` transform, so everything moves together. Three things deliberately do *not* grow with it. Markers counter-scale through a `--mk` custom property (`1/z`) — that is the point of zooming, since it pulls apart the pins that overlap at rest. Signposts get `scale(1/z)` appended after their `translate`, so the stake stays planted while the board keeps its size. Road strokes use `vector-effect="non-scaling-stroke"` with widths recomputed as `base × (mapWidth/1914) × z^0.4`; left to scale normally they swallow the map by 5×.
+
+On touch, `touch-action` flips between `pan-y` at rest and `none` once zoomed — otherwise a one-finger drag over the map would trap the page scroll on a long phone page. Two-finger pinch works at any zoom.
+
+**Alleys:** residential/unclassified/living_street/pedestrian ways (~52KB of path data) sit hidden under the main roads and fade in from z=2. `service` was excluded on purpose: it tripled the payload to 147KB and is mostly parking aisles, not the 골목길 people mean. Measuring the transform mid-animation is misleading — `.pin` carries a 0.12s transform transition, so read sizes after it settles or you will think counter-scaling is broken.
 
 **Data model** (all in the `<script>` at the bottom of `index.html`):
 - `FACILITIES` — the 11 real youth facilities. `lat`/`lng` are geocoded from each facility's real address (Nominatim); `left`/`top` are derived from those via the outline projection above. 수련관·상담복지센터·미래교육지원센터 share one building (북유성대로 158), so their pins are fanned apart by hand or they stack exactly.
