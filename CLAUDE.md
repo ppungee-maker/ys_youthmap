@@ -29,7 +29,7 @@ Beware the history here: pin `left`/`top` percentages were originally chosen *by
 - `FACILITIES` — the 11 real youth facilities. `lat`/`lng` are geocoded from each facility's real address (Nominatim); `left`/`top` are derived from those via the outline projection above. 수련관·상담복지센터·미래교육지원센터 share one building (북유성대로 158), so their pins are fanned apart by hand or they stack exactly.
 - `SCHOOLS` — 69 초/중/고 in Yuseong-gu, from an Overpass query clipped to the real district polygon. Same `lat`/`lng` + projected `left`/`top` shape as facilities.
 - `CHESTS` — 5 symbolic 급식카드(아이누리카드) zones, one per region. These represent a whole zone, not a single address, so they carry `left`/`top` only, no `lat`/`lng`.
-- `NOTICES` — post-office bulletin items; `id` is a sortable date string used to compute the unread badge.
+- `NOTICES` — post-office bulletin items. Reassigned wholesale when the Google Sheet loads, so read it, don't cache it. `id` is `date|title`, which is what the unread badge compares against.
 - `LAYERS` — the chip row's state (청소년시설 / 급식카드 / 초 / 중 / 고). `applyLayers()` is the single place that reflects state onto markers; chips persist to `localStorage`.
 - `ICONS` / `REGION_BADGE` — lookup tables mapping a facility's `cat` (category) to pin artwork and a facility's `region` (1–5) to a badge color.
 
@@ -45,6 +45,6 @@ Beware the history here: pin `left`/`top` percentages were originally chosen *by
 
 **Weather card:** bottom-left of the map, fed by two keyless CORS-friendly Open-Meteo endpoints (forecast + air-quality) for a fixed point near 유성구청 — deliberately not the user's position, so it renders without a location prompt. WMO weather codes map to one of six inline SVG icons; PM10/PM2.5 map to 환경부 grades. If either fetch fails the card stays hidden rather than showing a broken state.
 
-**Persistence:** a single `localStorage` key, `yuseong_lastSeenNotice`, tracks the newest notice `id` the user has seen, used to compute the unread badge on the post-office icon.
+**Persistence:** two `localStorage` keys. `yuseong_layers` holds the chip row's on/off state; `yuseong_seenNotices` holds the ids of notices already read, which drives the unread badge. It stores a list rather than a high-water date so that two notices posted on the same day both count as new.
 
 **Mobile:** the page is phone-first in practice — the intended users are elementary students. Markers are sized in CSS pixels while the map scales with its container, so a pin that is 7% of the map on a desktop becomes 15% on a phone and swamps the island; the `max-width:560px` block shrinks every marker to compensate. Change marker sizes in both places or the phone layout silently regresses. There is no `<html>`/`<head>`/`<body>` wrapper, but the file does start with `<!DOCTYPE html>` plus charset and viewport meta — all three are required (without the doctype the page falls into Quirks Mode, without the viewport meta phones render it at desktop width).
