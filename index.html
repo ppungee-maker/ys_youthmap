@@ -379,7 +379,10 @@
     background:var(--bg-outer);
     touch-action:pan-y;        /* 확대 전에는 한 손가락으로 페이지가 스크롤돼야 한다 */
   }
-  .map-wrap.zoomed{touch-action:none;cursor:grab;}
+  .map-wrap{cursor:grab;}
+  /* 확대 전에는 세로 드래그를 페이지 스크롤에 양보하고 가로 드래그만 지도가 쓴다.
+     확대한 뒤에는 모든 방향을 지도가 가져간다. */
+  .map-wrap.zoomed{touch-action:none;}
   .map-wrap.dragging{cursor:grabbing;}
   #mapViewport{position:absolute;inset:0;}
   /* SVG는 viewBox를 바꿔 다시 그리므로 확대해도 선명하다. HTML 마커만 transform 으로 따라간다. */
@@ -705,7 +708,7 @@
         <!-- 13 real administrative-dong shapes, one cohesive island green like a park map -->
         <!-- 섬 바깥은 바다. 실제 주변 도로망을 깔아 두었다가 바다로 바꾸면서 걷어냈다
              (필요하면 git 이력에 남아 있다). 물결은 멀수록 옅어지게 둔다. -->
-        <rect x="-157" y="-361" width="1914" height="3248" fill="var(--sea)"/>
+        <rect x="-1000" y="-1650" width="3600" height="5800" fill="var(--sea)"/>
         <!-- 물 아래로 비치는 주변 도시. 바다를 반투명하게 하면 흰 배경이 올라와 파란색이 죽으므로,
              바다는 불투명하게 깔고 그 위에 도로를 옅게 얹어 비쳐 보이게 한다. -->
         <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="var(--sea-sunken)">
@@ -1379,9 +1382,12 @@
   function applyTransform(){
     const r = mapWrap.getBoundingClientRect();
     // 확대한 만큼만 움직일 수 있게 가둬서 지도가 화면 밖으로 끌려나가지 않게 한다
+    // 확대 배율만큼 + 어느 배율에서나 한 뼘(프레임의 30%)은 더 끌 수 있게 둬서
+    // 기본 배율에서도 섬 둘레를 둘러볼 수 있다
+    const mX = r.width * 0.3, mY = r.height * 0.3;
     const maxX = r.width * (z - 1), maxY = r.height * (z - 1);
-    tx = Math.min(0, Math.max(-maxX, tx));
-    ty = Math.min(0, Math.max(-maxY, ty));
+    tx = Math.min(mX, Math.max(-maxX - mX, tx));
+    ty = Math.min(mY, Math.max(-maxY - mY, ty));
 
     // SVG는 창(viewBox)을 좁혀서 벡터를 다시 그린다 — transform scale 로 키우면
     // 브라우저가 래스터 한 장을 늘려 버려서 그림을 확대한 것처럼 뭉개진다.
@@ -1405,7 +1411,7 @@
     alleyLayer.setAttribute('opacity', alleyOn.toFixed(2));
     signs.forEach(s => s.el.setAttribute('transform', `${s.base} scale(${1 / z})`));
     mapWrap.classList.toggle('zoomed', z > MIN_Z + EPS);
-    zoomOut.disabled = z <= MIN_Z + EPS;
+    zoomOut.disabled = z <= MIN_Z + EPS && !tx && !ty;
     zoomIn.disabled = z >= MAX_Z - EPS;
   }
 
@@ -1433,7 +1439,10 @@
     return [r.left + r.width / 2, r.top + r.height / 2];
   };
   zoomIn.addEventListener('click', ()=> zoomAt(z * 1.6, ...centre()));
-  zoomOut.addEventListener('click', ()=> zoomAt(z / 1.6, ...centre()));
+  zoomOut.addEventListener('click', ()=>{
+    if(z <= MIN_Z + EPS){ tx = 0; ty = 0; applyTransform(); }   // 이미 기본 배율이면 가운데로
+    else zoomAt(z / 1.6, ...centre());
+  });
 
   mapWrap.addEventListener('wheel', e=>{
     e.preventDefault();
@@ -1452,7 +1461,7 @@
       const [a,b] = [...pts.values()];
       pinchStart = Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
       startZ = z;
-    } else if(z > MIN_Z + EPS){
+    } else {
       last = {x:e.clientX, y:e.clientY};
       mapWrap.setPointerCapture(e.pointerId);
       mapWrap.classList.add('dragging');
