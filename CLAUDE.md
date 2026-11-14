@@ -41,6 +41,8 @@ Beware the history here: pin `left`/`top` percentages were originally chosen *by
 
 **Directions:** facility and school modals carry 길찾기 links that hand off to Kakao Map / Google Maps with the real `lat`/`lng` as destination. Routing is deliberately *not* computed in-page — the embedded network has no residential streets, so any route drawn here would diverge from the walk people actually take.
 
+**Notices:** the post-office board reads from a public Google Sheet (gviz CSV endpoint, which does send CORS headers) so a non-technical maintainer can post without touching code — see `HOWTO-소식올리기.md`. `NOTICE_SHEET_ID` at the top of the script is the only thing to configure; empty means the notices hardcoded in the file are used. Every failure path — empty id, missing sheet, renamed columns, offline — falls back to those built-ins rather than showing an empty board, because nobody on the receiving end will be able to debug it. Notice text is sheet-authored, so it is escaped before it reaches `innerHTML`; keep it that way.
+
 **Weather card:** bottom-left of the map, fed by two keyless CORS-friendly Open-Meteo endpoints (forecast + air-quality) for a fixed point near 유성구청 — deliberately not the user's position, so it renders without a location prompt. WMO weather codes map to one of six inline SVG icons; PM10/PM2.5 map to 환경부 grades. If either fetch fails the card stays hidden rather than showing a broken state.
 
 **Persistence:** a single `localStorage` key, `yuseong_lastSeenNotice`, tracks the newest notice `id` the user has seen, used to compute the unread badge on the post-office icon.

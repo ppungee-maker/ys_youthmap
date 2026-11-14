@@ -991,14 +991,24 @@
     {lv:'고', name:'중일고등학교', left:72.93, top:38.82, lat:36.420299, lng:127.389433},
   ];
 
-  const NOTICES = [
-    {id:'2026-11-01', date:'2026.11.01', title:'겨울방학 특별 프로그램 접수 시작', sample:true,
+  // ───────────────────────────────────────────────────────────────
+  //  우체국 소식을 바꾸려면 여기만 고치면 됩니다.
+  //  구글 시트 주소창의 /d/ 와 /edit 사이에 있는 긴 문자열을 넣으세요.
+  //  비워두면 아래 기본 소식이 그대로 보입니다.  자세한 방법은 HOWTO-소식올리기.md
+  const NOTICE_SHEET_ID = '';
+  const NOTICE_SHEET_NAME = '소식';
+  // ───────────────────────────────────────────────────────────────
+
+  // 시트를 못 읽을 때(주소가 비었거나·삭제됐거나·인터넷이 끊겼거나) 보여줄 기본 소식
+  let NOTICES = [
+    {date:'2026.11.01', title:'겨울방학 특별 프로그램 접수 시작', sample:true,
       body:'유성구청소년수련관에서 보드게임·댄스·밴드 등 겨울방학 프로그램 참가자를 모집해요.'},
-    {id:'2026-10-20', date:'2026.10.20', title:'아이누리카드 사용처가 늘어났어요', sample:true,
+    {date:'2026.10.20', title:'아이누리카드 사용처가 늘어났어요', sample:true,
       body:'이제 BC카드 가맹 음식점이면 어디서나 아이누리카드를 쓸 수 있어요. 대전 전체 음식점만 23,992곳!'},
-    {id:'2026-10-05', date:'2026.10.05', title:'구즉청소년문화의집 VR체험실 새단장', sample:true,
+    {date:'2026.10.05', title:'구즉청소년문화의집 VR체험실 새단장', sample:true,
       body:'VR체험실이 새로 꾸며져 다시 문을 열었어요. 지금 방문해보세요!'},
   ];
+  NOTICES.forEach(n => n.id = n.date + '|' + n.title);
 
   const ICONS = {
     '행사거점': {shape:'tower-stripe', roof:'#FF9B78'},
@@ -1540,13 +1550,16 @@
     modal.showModal();
   }
 
+  const esc = v => String(v ?? '').replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
   function openPost(){
-    const items = NOTICES.map(n=>`
+    const items = NOTICES.length ? NOTICES.map(n=>`
       <div class="notice">
-        <div class="d">${n.date}${n.sample ? '<span class="sample-tag">예시 소식</span>' : ''}</div>
-        <div class="t">${n.title}</div>
-        <div class="b">${n.body}</div>
-      </div>`).join('');
+        <div class="d">${esc(n.date)}${n.sample ? '<span class="sample-tag">예시 소식</span>' : ''}</div>
+        <div class="t">${esc(n.title)}</div>
+        <div class="b">${esc(n.body)}</div>
+      </div>`).join('') : '<p>아직 도착한 소식이 없어요.</p>';
     modalInner.innerHTML = `
       <span class="modal-tag" style="background:var(--accent-coral-deep)">우체국 게시판</span>
       <h3>섬에 도착한 소식</h3>
@@ -1562,12 +1575,13 @@
   }
   modal.addEventListener('click', e=>{ if(e.target === modal) closeModal(); });
 
-  function getLastSeen(){
-    try{ return localStorage.getItem('yuseong_lastSeenNotice') || ''; }
-    catch(e){ return ''; }
+  // 같은 날짜로 두 건이 올라와도 각각 새 소식으로 세도록 읽은 소식을 개별로 기억한다
+  function getSeen(){
+    try{ return new Set(JSON.parse(localStorage.getItem('yuseong_seenNotices') || '[]')); }
+    catch(e){ return new Set(); }
   }
-  function setLastSeen(id){
-    try{ localStorage.setItem('yuseong_lastSeenNotice', id); }
+  function setSeen(ids){
+    try{ localStorage.setItem('yuseong_seenNotices', JSON.stringify(ids.slice(-60))); }
     catch(e){}
   }
   // 유성구청 부근 고정 좌표 — 날씨는 위치 권한 없이도 보여야 해서 사용자 위치를 쓰지 않는다.
@@ -1663,8 +1677,8 @@
   loadWeather();
 
   function refreshBadge(){
-    const lastSeen = getLastSeen();
-    const unread = NOTICES.filter(n => n.id > lastSeen).length;
+    const seen = getSeen();
+    const unread = NOTICES.filter(n => !seen.has(n.id)).length;
     const badge = document.getElementById('badge');
     if(unread > 0){
       badge.hidden = false;
@@ -1674,9 +1688,55 @@
     }
   }
   function markNoticesRead(){
-    const newest = NOTICES.reduce((a,n)=> n.id > a ? n.id : a, '');
-    setLastSeen(newest);
+    const seen = getSeen();
+    NOTICES.forEach(n => seen.add(n.id));
+    setSeen([...seen]);
     refreshBadge();
   }
+
+  // 따옴표 안의 쉼표·줄바꿈까지 처리해야 해서 split(',')로는 부족하다
+  function parseCsv(text){
+    const rows=[]; let row=[], cell='', q=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(q){
+        if(c === '"'){ if(text[i+1] === '"'){ cell+='"'; i++; } else q=false; }
+        else cell+=c;
+      } else if(c === '"') q=true;
+      else if(c === ','){ row.push(cell); cell=''; }
+      else if(c === '\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
+      else if(c !== '\r') cell+=c;
+    }
+    if(cell.length || row.length){ row.push(cell); rows.push(row); }
+    return rows.filter(r => r.some(v => v.trim()));
+  }
+
+  async function loadNoticeSheet(){
+    if(!NOTICE_SHEET_ID) return;
+    try{
+      const url = `https://docs.google.com/spreadsheets/d/${NOTICE_SHEET_ID}/gviz/tq`
+        + `?tqx=out:csv&sheet=${encodeURIComponent(NOTICE_SHEET_NAME)}&t=${Date.now()}`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error(res.status);
+      const rows = parseCsv(await res.text());
+      if(rows.length < 2) return;                       // 머리글만 있으면 기본 소식 유지
+      const head = rows[0].map(h => h.trim());
+      const col = name => head.findIndex(h => h === name);
+      const [iD, iT, iB] = [col('날짜'), col('제목'), col('내용')];
+      if(iD < 0 || iT < 0 || iB < 0) return;            // 열 이름이 다르면 건드리지 않는다
+      const parsed = rows.slice(1)
+        .map(r => ({date:(r[iD]||'').trim(), title:(r[iT]||'').trim(), body:(r[iB]||'').trim()}))
+        .filter(n => n.title)
+        .map(n => ({...n, id:n.date + '|' + n.title}));
+      if(!parsed.length) return;
+      parsed.sort((a,b) => b.date.localeCompare(a.date));
+      NOTICES = parsed;
+      refreshBadge();
+    }catch(e){
+      // 시트를 못 읽으면 파일에 적힌 기본 소식이 그대로 쓰인다
+    }
+  }
+
   refreshBadge();
+  loadNoticeSheet();
 </script>
