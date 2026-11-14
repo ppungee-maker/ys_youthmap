@@ -381,14 +381,16 @@
   }
   .map-wrap.zoomed{touch-action:none;cursor:grab;}
   .map-wrap.dragging{cursor:grabbing;}
-  #mapViewport{position:absolute;inset:0;transform-origin:0 0;will-change:transform;}
+  #mapViewport{position:absolute;inset:0;}
+  /* SVG는 viewBox를 바꿔 다시 그리므로 확대해도 선명하다. HTML 마커만 transform 으로 따라간다. */
+  #pinLayer{position:absolute;inset:0;transform-origin:0 0;will-change:transform;}
 
   /* 지도를 키워도 마커는 제자리 크기를 지켜야 겹쳐 있던 것이 벌어져 보인다 */
-  #mapViewport .pin{transform:translate(-50%,-100%) scale(var(--mk,1));}
-  #mapViewport .pin:hover{transform:translate(-50%,-100%) scale(calc(var(--mk,1) * 1.06));}
-  #mapViewport .chest-btn,#mapViewport .post-btn{transform:translate(-50%,-50%) scale(var(--mk,1));}
-  #mapViewport .chest-btn:hover,#mapViewport .post-btn:hover{transform:translate(-50%,-50%) scale(calc(var(--mk,1) * 1.08));}
-  #mapViewport .school-dot{transform:translate(-50%,-50%) scale(var(--mk,1));}
+  #pinLayer .pin{transform:translate(-50%,-100%) scale(var(--mk,1));}
+  #pinLayer .pin:hover{transform:translate(-50%,-100%) scale(calc(var(--mk,1) * 1.06));}
+  #pinLayer .chest-btn,#pinLayer .post-btn{transform:translate(-50%,-50%) scale(var(--mk,1));}
+  #pinLayer .chest-btn:hover,#pinLayer .post-btn:hover{transform:translate(-50%,-50%) scale(calc(var(--mk,1) * 1.08));}
+  #pinLayer .school-dot{transform:translate(-50%,-50%) scale(var(--mk,1));}
 
   .zoom-ctrl{position:absolute;right:14px;bottom:14px;z-index:6;display:flex;flex-direction:column;gap:6px;}
   .zoom-ctrl button{
@@ -1312,7 +1314,6 @@
   //  SVG라 확대해도 도로·하천이 흐려지지 않고 선명해진다.
   //  마커는 역배율로 제 크기를 지켜서, 확대하면 겹쳐 있던 것들이 벌어진다.
   const mapWrap = document.getElementById('mapWrap');
-  const viewport = document.getElementById('mapViewport');
   const alleyLayer = document.getElementById('alleyLayer');
   const roadPaths = [...document.querySelectorAll('.rd')];
   const MIN_Z = 1, MAX_Z = 6, EPS = 0.002;   // 1.6으로 나누다 보면 1.0000000000000002 같은 값이 남는다
@@ -1323,14 +1324,27 @@
   const signs = [...document.querySelectorAll('.sign-layer > g > g')]
     .map(g => ({el:g, base:g.getAttribute('transform')}));
 
+  const BASE_VB = [-157, -361, 1914, 3248];   // 기본 배율에서 보이는 창
+  const svgLayers = [document.getElementById('islandSvg'), document.querySelector('.sign-layer')];
+
   function applyTransform(){
     const r = mapWrap.getBoundingClientRect();
     // 확대한 만큼만 움직일 수 있게 가둬서 지도가 화면 밖으로 끌려나가지 않게 한다
     const maxX = r.width * (z - 1), maxY = r.height * (z - 1);
     tx = Math.min(0, Math.max(-maxX, tx));
     ty = Math.min(0, Math.max(-maxY, ty));
-    viewport.style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
-    viewport.style.setProperty('--mk', 1 / z);
+
+    // SVG는 창(viewBox)을 좁혀서 벡터를 다시 그린다 — transform scale 로 키우면
+    // 브라우저가 래스터 한 장을 늘려 버려서 그림을 확대한 것처럼 뭉개진다.
+    const [VX, VY, VW, VH] = BASE_VB;
+    const vw = VW / z, vh = VH / z;
+    const vx = VX - tx * vw / r.width, vy = VY - ty * vh / r.height;
+    const vb = `${vx.toFixed(2)} ${vy.toFixed(2)} ${vw.toFixed(2)} ${vh.toFixed(2)}`;
+    svgLayers.forEach(el => el.setAttribute('viewBox', vb));
+
+    // 마커는 HTML이라 변형으로 따라가되, 크기는 역배율로 제자리를 지킨다
+    pinLayer.style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
+    pinLayer.style.setProperty('--mk', 1 / z);
     // 도로가 배율만큼 그대로 굵어지면 확대했을 때 화면이 도로로 덮인다.
     // non-scaling-stroke 로 화면 기준 두께를 쓰되 z^0.4 만큼만 굵어지게 한다.
     const f = (mapWrap.clientWidth / 1914) * Math.pow(z, 0.4);
