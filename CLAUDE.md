@@ -31,6 +31,8 @@ On touch, `touch-action` flips between `pan-y` at rest and `none` once zoomed �
 
 **Alleys:** residential/unclassified/living_street/pedestrian ways (~52KB of path data) sit hidden under the main roads and fade in from z=2. `service` was excluded on purpose: it tripled the payload to 147KB and is mostly parking aisles, not the 골목길 people mean. Measuring the transform mid-animation is misleading — `.pin` carries a 0.12s transform transition, so read sizes after it settles or you will think counter-scaling is broken.
 
+**Palette:** the page ground is pale water (`--bg-outer`), not the warm cream it started as — that cream/serif/terracotta combination is the most recognisable AI-design cliché and the map had drifted into it. Three tones now separate by meaning: water for the page, muted grey-green (`--outland`) for the neighbouring districts drawn inside the map, and saturated green for Yuseong itself. Keep `--outland` a *land* colour — tinting it blue would claim 서구·대덕구·세종 are sea, which the rest of the map is careful not to do.
+
 **Data model** (all in the `<script>` at the bottom of `index.html`):
 - `FACILITIES` — the 11 real youth facilities. `lat`/`lng` are geocoded from each facility's real address (Nominatim); `left`/`top` are derived from those via the outline projection above. 수련관·상담복지센터·미래교육지원센터 share one building (북유성대로 158), so their pins are fanned apart by hand or they stack exactly.
 - `SCHOOLS` — 69 초/중/고 in Yuseong-gu, from an Overpass query clipped to the real district polygon. Same `lat`/`lng` + projected `left`/`top` shape as facilities.
