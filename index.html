@@ -386,7 +386,9 @@
   .map-wrap.dragging{cursor:grabbing;}
   #mapViewport{position:absolute;inset:0;}
   /* SVG는 viewBox를 바꿔 다시 그리므로 확대해도 선명하다. HTML 마커만 transform 으로 따라간다. */
-  #pinLayer{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform;}
+  /* 회전은 중심 기준(래퍼), 확대·이동은 좌상단 기준(안쪽) — viewBox 계산과 축을 맞춰야 한다 */
+  #pinRotate{position:absolute;inset:0;transform-origin:50% 50%;}
+  #pinLayer{position:absolute;inset:0;transform-origin:0 0;will-change:transform;}
 
   /* 지도를 키워도 마커는 제자리 크기를 지켜야 겹쳐 있던 것이 벌어져 보인다 */
   #pinLayer .pin{transform:translate(-50%,-100%) rotate(var(--rot,0deg)) scale(var(--mk,1));transform-origin:50% 100%;}
@@ -873,7 +875,7 @@
         </g>
       </svg>
 
-      <div id="pinLayer"></div>
+      <div id="pinRotate"><div id="pinLayer"></div></div>
       <!-- 2배 크기 표지판은 어디에 둬도 마커와 겹친다. 마을 이름이 건물에 가려지는 것보다
            건물을 살짝 가리는 편이 나아서 마커 위에 그린다. 클릭은 그대로 통과시킨다. -->
       <svg class="sign-layer" viewBox="-157 -361 1914 3248" aria-hidden="true">
@@ -1367,6 +1369,7 @@
   //  마커는 역배율로 제 크기를 지켜서, 확대하면 겹쳐 있던 것들이 벌어진다.
   const mapWrap = document.getElementById('mapWrap');
   const alleyLayer = document.getElementById('alleyLayer');
+  const pinRotate = document.getElementById('pinRotate');
   const rotG = document.getElementById('rotG');
   const rotGS = document.getElementById('rotGS');
   const roadPaths = [...document.querySelectorAll('.rd')];
@@ -1409,7 +1412,8 @@
     svgLayers.forEach(el => el.setAttribute('viewBox', vb));
 
     // 마커는 HTML이라 변형으로 따라가되, 크기는 역배율로 제자리를 지킨다
-    pinLayer.style.transform = `rotate(${rot}deg) translate(${tx}px,${ty}px) scale(${z})`;
+    pinRotate.style.transform = `rotate(${rot}deg)`;
+    pinLayer.style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
     pinLayer.style.setProperty('--mk', 1 / z);
     // 도로가 배율만큼 그대로 굵어지면 확대했을 때 화면이 도로로 덮인다.
     // non-scaling-stroke 로 화면 기준 두께를 쓰되 z^0.4 만큼만 굵어지게 한다.
@@ -1438,10 +1442,10 @@
   }
 
   // 화면 좌표를 회전 이전의 지도 좌표로 되돌린다
-  function unrotate(cx, cy){
+  function unrotate(cx, cy, angle = rot){
     const r = mapWrap.getBoundingClientRect();
     const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
-    const a = -rot * Math.PI / 180, dx = cx - ox, dy = cy - oy;
+    const a = -angle * Math.PI / 180, dx = cx - ox, dy = cy - oy;
     return [r.width / 2 + dx * Math.cos(a) - dy * Math.sin(a),
             r.height / 2 + dx * Math.sin(a) + dy * Math.cos(a)];
   }
@@ -1454,11 +1458,13 @@
   // 화면상의 한 점을 고정한 채 배율만 바꾼다 (손가락 사이 지점·커서 위치 유지)
   function zoomAt(nextZ, cx, cy){
     const [px, py] = unrotate(cx, cy);
+    zoomAtLocal(nextZ, px, py);
+  }
+  function zoomAtLocal(nextZ, px, py){
     const k = Math.min(MAX_Z, Math.max(MIN_Z, nextZ));
     tx = px - (px - tx) * (k / z);
     ty = py - (py - ty) * (k / z);
     z = k <= MIN_Z + EPS ? MIN_Z : k;
-    if(z === MIN_Z){ tx = 0; ty = 0; }
     applyTransform();
   }
 
@@ -1479,7 +1485,10 @@
     else zoomAt(z / 1.6, ...centre());
   });
 
+  // 그냥 휠은 페이지 스크롤에 양보한다. 지도가 화면을 가득 채우기 때문에
+  // 가로채면 범례·푸터까지 내려갈 방법이 없어진다. (트랙패드 핀치는 ctrl 휠로 들어온다)
   mapWrap.addEventListener('wheel', e=>{
+    if(!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
     zoomAt(z * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX, e.clientY);
   }, {passive:false});
@@ -1487,7 +1496,8 @@
   // 한 손가락: 확대 전에는 페이지 스크롤에 양보하고, 확대한 뒤에만 지도를 끈다.
   // 두 손가락: 언제나 핀치 확대.
   const pts = new Map();
-  let pinchStart = 0, startZ = 1, twistStart = 0, startRot = 0, last = null;
+  let pinchStart = 0, startZ = 1, twistStart = 0, startRot = 0, last = null, down = null;
+  const DRAG_SLOP = 6;   // 이만큼 움직여야 '끌기'로 본다
 
   mapWrap.addEventListener('pointerdown', e=>{
     if(e.target.closest('.zoom-ctrl')) return;
@@ -1498,9 +1508,10 @@
       twistStart = Math.atan2(b.clientY-a.clientY, b.clientX-a.clientX) * 180 / Math.PI;
       startZ = z; startRot = rot;
     } else {
+      // 여기서 바로 setPointerCapture 하면 click 이 mapWrap 으로 재타겟돼 마커가 안 눌린다.
+      // 실제로 끌기 시작한 뒤에 캡처한다.
       last = {x:e.clientX, y:e.clientY};
-      mapWrap.setPointerCapture(e.pointerId);
-      mapWrap.classList.add('dragging');
+      down = {x:e.clientX, y:e.clientY, id:e.pointerId};
     }
   });
 
@@ -1513,9 +1524,19 @@
       const ang = Math.atan2(b.clientY-a.clientY, b.clientX-a.clientX) * 180 / Math.PI;
       let dAng = ang - twistStart;
       dAng = ((dAng + 180) % 360 + 360) % 360 - 180;      // -180..180 으로 정규화
+      const mx = (a.clientX+b.clientX)/2, my = (a.clientY+b.clientY)/2;
+      const [oldX, oldY] = unrotate(mx, my, rot);
       rot = startRot + dAng;
-      zoomAt(startZ * (d / pinchStart), (a.clientX+b.clientX)/2, (a.clientY+b.clientY)/2);
+      const [newX, newY] = unrotate(mx, my, rot);
+      tx += newX - oldX; ty += newY - oldY;               // 각도가 바뀐 만큼 중심을 따라붙인다
+      zoomAtLocal(startZ * (d / pinchStart), newX, newY);
     } else if(last && pts.size === 1){
+      if(down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < DRAG_SLOP) return;
+      if(down){
+        mapWrap.setPointerCapture(down.id);
+        mapWrap.classList.add('dragging');
+        down = null;
+      }
       const [dx, dy] = unrotateDelta(e.clientX - last.x, e.clientY - last.y);
       tx += dx; ty += dy;
       last = {x:e.clientX, y:e.clientY};
@@ -1526,7 +1547,10 @@
   function endPointer(e){
     pts.delete(e.pointerId);
     if(pts.size < 2) pinchStart = 0;
-    if(pts.size === 0){ last = null; mapWrap.classList.remove('dragging'); }
+    // 핀치하다 손가락 하나만 떼면 남은 손가락의 last 가 눌렀던 시점 그대로라
+    // 다음 move 에서 그동안 벌어진 거리가 한 번에 튄다
+    if(pts.size === 1){ const r = [...pts.values()][0]; last = {x:r.clientX, y:r.clientY}; }
+    if(pts.size === 0){ last = null; down = null; mapWrap.classList.remove('dragging'); }
   }
   mapWrap.addEventListener('pointerup', endPointer);
   mapWrap.addEventListener('pointercancel', endPointer);
@@ -1537,6 +1561,8 @@
   });
 
   applyTransform();
+  // 도로 두께와 이동 한계가 픽셀 기준이라, 회전·창 크기 변화 뒤 다시 계산해야 한다
+  new ResizeObserver(() => applyTransform()).observe(mapWrap);
   // ─────────────────────────────────────────────────────────────────
 
   const bigFind = document.getElementById('bigFind');
@@ -1760,8 +1786,23 @@
     if(!modal.open) modal.showModal();
   }
 
+  // 확대·이동해 둔 상태에서는 반짝여 봐야 화면 밖이라 안 보인다. 먼저 지도를 옮긴다.
+  function bringIntoView(el){
+    const r = mapWrap.getBoundingClientRect();
+    const lx = parseFloat(el.style.left) / 100 * r.width;   // 배율 1 기준 레이어 좌표
+    const ly = parseFloat(el.style.top) / 100 * r.height;
+    const pad = 0.2;                                        // 가장자리에 붙지 않게
+    const x = tx + lx * z, y = ty + ly * z;
+    if(x < r.width * pad)        tx += r.width * pad - x;
+    if(x > r.width * (1 - pad))  tx += r.width * (1 - pad) - x;
+    if(y < r.height * pad)       ty += r.height * pad - y;
+    if(y > r.height * (1 - pad)) ty += r.height * (1 - pad) - y;
+    applyTransform();
+  }
+
   function flashMarker(el){
     if(!el) return;
+    bringIntoView(el);
     el.scrollIntoView({behavior:'smooth', block:'center'});
     el.classList.add('flash');
     setTimeout(()=> el.classList.remove('flash'), 1600);

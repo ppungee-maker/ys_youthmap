@@ -29,6 +29,11 @@ Beware the history here: pin `left`/`top` percentages were originally chosen *by
 
 **Rotation** is a two-finger twist. It is applied *inside* the SVG as a transform on `#rotG` / `#rotGS` rather than to a container element: rotating the container turns the SVG box itself and leaves the frame corners empty, whereas rotating a group lets the oversized sea rect swing round and keep covering. The HTML marker layer has no viewBox, so it takes a CSS `rotate()` applied *outside* its pan/zoom transform.
 
+Two traps here cost a round of broken builds, both silent — nothing throws, the map just stops working:
+
+- **Never `setPointerCapture` on `pointerdown`.** Capture retargets the compatibility `click` to `#mapWrap`, so every pin, chest, chip and button underneath stops responding while the map still looks fine. Capture only after the pointer has moved past `DRAG_SLOP`.
+- **`#pinLayer` must keep `transform-origin: 0 0`.** The SVG zooms by narrowing its viewBox, which scales about the frame's top-left; a centre-origin CSS transform on the marker layer scales about the middle, and the two drift apart by `C·(1−z)` — markers float off into the sea the moment you zoom. Rotation needs a centre pivot, so it lives on the `#pinRotate` wrapper instead of being merged in.
+
 Because rotation sits outside pan and zoom, screen coordinates have to be converted back into the unrotated frame before use — `unrotate()` for a focal point, `unrotateDelta()` for a drag — or dragging goes sideways by exactly the rotation angle.
 
 What stays upright and what turns is a deliberate split: signposts, markers and badges counter-rotate so they stay readable; the compass, the boat and everything else painted on the world turn with it, which is what finally makes the compass mean something. Road and river names turn with their road (they are road-aligned) and flip 180° when they would otherwise read upside down.
