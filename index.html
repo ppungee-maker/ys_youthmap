@@ -275,6 +275,8 @@
     box-shadow:0 0 0 2.5px #FFFFFF, 0 2px 3px rgba(54,64,45,.4);
   }
   .school-dot:hover i{transform:scale(1.25);}
+  /* 아동안전지킴이집: 학교 점과 같은 크기·선택·깜빡임 스타일을 쓰고, 모양만 둥근 네모로 구분한다 */
+  .school-dot.guard i{border-radius:3px;width:9px;height:9px;margin:17.5px;}
   .school-dot:focus-visible{outline:3px solid var(--accent-coral);outline-offset:0;border-radius:50%;}
 
   .weather-card{
@@ -612,6 +614,7 @@
     .badge{min-width:16px;height:16px;font-size:10px;top:-3px;right:-5px;box-shadow:0 0 0 2px var(--land);}
     .school-dot{width:36px;height:36px;}
     .school-dot i{width:11px;height:11px;margin:12.5px;}
+    .school-dot.guard i{width:8px;height:8px;margin:14px;}
     .locate-btn{width:40px;height:40px;right:10px;top:10px;}
     .zoom-ctrl{right:10px;top:58px;}
     .zoom-ctrl button{width:36px;height:36px;border-radius:12px;font-size:17px;}
@@ -1026,6 +1029,7 @@
       <li><b>도로·하천·학교·섬 바깥 지도</b>OpenStreetMap (©&nbsp;OpenStreetMap 기여자)</li>
       <li><b>청소년 시설</b>도로명주소로 확인 (2026년 10월 기준), 위치는 Nominatim(OpenStreetMap)으로 변환</li>
       <li><b>날씨·미세먼지</b>Open-Meteo (일부 기기에서는 기온만 wttr.in)</li>
+      <li><b>아동안전지킴이집</b>경찰청 안전Dream 안전지도 Open API (2026년 11월 기준) — 자료 출처: 경찰청</li>
       <li><b>급식카드 가맹점</b><a href="http://dreamtree.shinhancard.com/waf/opendatam" target="_blank" rel="noopener">신한카드 아이누리카드 가맹점 조회</a></li>
       <li><b>우체국 소식</b>운영자가 직접 올린 소식</li>
     </ul>
@@ -1152,6 +1156,75 @@
     {lv:'고', name:'유성생명과학고등학교', left:48.14, top:60.42, lat:36.346988, lng:127.328046},
     {lv:'고', name:'유성여자고등학교', left:46.88, top:50.07, lat:36.383368, lng:127.32817},
     {lv:'고', name:'중일고등학교', left:72.93, top:38.82, lat:36.420299, lng:127.389433},
+  ];
+
+  // 아동안전지킴이집 63곳 — 경찰청 안전Dream 안전지도 Open API(clArray=09)에서 2026-11-17 받은 값.
+  // 페이지를 열 때마다 부르지 않는다: 인증키가 파일째 공개되고, 하루 조회 한도도 있다.
+  // 위경도를 학교와 같은 투영식으로 바꿨고, 겹침 때문에 옮기지는 않았다(실제 자리 그대로).
+  const GUARDS = [
+    {name:'CU 대전지족드림점', addr:'유성구 은구비남로 39', tel:'042-824-0519', left:44.86, top:53.02, lat:36.372393, lng:127.320098},
+    {name:'CU관평한화점', addr:'유성구 배울2로 61-0,상가2동', tel:'', left:73.89, top:38.56, lat:36.421357, lng:127.391787},
+    {name:'CU덕명타운점', addr:'유성구 덕명서로2번길 17', tel:'042-822-4447', left:37.57, top:57.05, lat:36.358780, lng:127.302088},
+    {name:'CU유성지족점', addr:'유성구 은구비로 48-0,101호', tel:'', left:44.98, top:52.04, lat:36.375721, lng:127.320403},
+    {name:'GS25 원내점', addr:'유성구 진잠로66번길 58', tel:'042-545-7227', left:44.81, top:74.99, lat:36.298024, lng:127.319983},
+    {name:'GS25 장대중앙점', addr:'유성구 장대로 90-0,1층', tel:'', left:50.73, top:55.86, lat:36.362805, lng:127.334600},
+    {name:'GS25 전민엑스포점', addr:'유성구 전민로58번길 38', tel:'042-862-0560', left:78.21, top:45.54, lat:36.397735, lng:127.402461},
+    {name:'GS25대전도룡점', addr:'유성구 대덕대로 594', tel:'', left:68.71, top:49.03, lat:36.385908, lng:127.379011},
+    {name:'GS25봉산대광점', addr:'유성구 와룡로 206-0,상가동 110호', tel:'', left:70.33, top:32.37, lat:36.442319, lng:127.383001},
+    {name:'cu대전봉명 호반점', addr:',대전 유성구 도안동로 523', tel:'042-825-3595', left:55.78, top:59.88, lat:36.349176, lng:127.347064},
+    {name:'cu대전죽동점', addr:',대전 유성구 죽동719-1', tel:'042-825-4530', left:52.36, top:52.92, lat:36.372760, lng:127.338622},
+    {name:'cu유성봉산점', addr:',대전시 유성구 봉산동234-12', tel:'042-934-6261', left:72.30, top:34.50, lat:36.435102, lng:127.387862},
+    {name:'계림공인중계사', addr:'유성구 전민동,464-1', tel:'042-862-5114', left:80.65, top:44.91, lat:36.399858, lng:127.408484},
+    {name:'구암지역아동센터', addr:'유성구 월드컵대로300번길 12-0,1층', tel:'042-824-7252', left:50.15, top:60.27, lat:36.347863, lng:127.333168},
+    {name:'대한민국복권', addr:'유성구 전민로46번길 40', tel:'042-862-1888', left:78.21, top:45.85, lat:36.396681, lng:127.402469},
+    {name:'둔곡별부동산', addr:'유성구 과학성장로 80-0,우미린상가 2동 103호', tel:'042-935-9114', left:63.17, top:28.76, lat:36.454537, lng:127.365334},
+    {name:'떡고을', addr:'유성구 은구비로 44', tel:'', left:44.75, top:52.04, lat:36.375717, lng:127.319824},
+    {name:'리더스태권도', addr:'유성구 상대복용로29번길 51-0,상가B1 24호', tel:'042-825-0780', left:49.17, top:64.05, lat:36.335052, lng:127.330749},
+    {name:'마녀떡볶이', addr:'유성구 전민로58번길 6', tel:'', left:77.48, top:45.54, lat:36.397744, lng:127.400655},
+    {name:'못난이 꽈배기', addr:'유성구 은구비서로 38', tel:'', left:45.18, top:52.18, lat:36.375264, lng:127.320898},
+    {name:'별하살롱', addr:'유성구 원신흥남로12번길 33-22,1층', tel:'042-822-3963', left:52.70, top:64.27, lat:36.334325, lng:127.339465},
+    {name:'삼성스토어 유성점', addr:'유성구 계룡로 111', tel:'042-823-2288', left:54.20, top:58.59, lat:36.353542, lng:127.343169},
+    {name:'삼성영어노은수정', addr:'유성구 왕가봉로 30-0,1층', tel:'042-826-3479', left:43.13, top:54.96, lat:36.365853, lng:127.315820},
+    {name:'새생명약국', addr:'유성구 전민로70번길 38-0,1층', tel:'042-864-4661', left:78.21, top:45.23, lat:36.398789, lng:127.402464},
+    {name:'세동강은순맛집', addr:'유성구 세동로510번길 3', tel:'042-825-2797', left:23.03, top:70.40, lat:36.313584, lng:127.266177},
+    {name:'세븐일레븐 노은동로', addr:'유성구 노은동로 219-0,상가동 101호', tel:'', left:44.64, top:51.07, lat:36.379014, lng:127.319550},
+    {name:'세븐일레븐 뉴전민점', addr:'유성구 전민로22번길 62-0,1층', tel:'', left:78.32, top:45.12, lat:36.399151, lng:127.402740},
+    {name:'세븐일레븐 대전노은점', addr:'유성구 은구비남로33번길 36', tel:'', left:44.62, top:52.59, lat:36.373877, lng:127.319506},
+    {name:'세븐일레븐 대전전민센터점', addr:'유성구 전민로70번길 13-0,1층', tel:'', left:77.65, top:45.16, lat:36.399008, lng:127.401092},
+    {name:'세븐일레븐 송강중앙점', addr:'유성구 봉산로 52', tel:'042-935-0033', left:71.53, top:33.68, lat:36.437877, lng:127.385959},
+    {name:'세븐일레븐 유성반석사랑점', addr:'유성구 반석동', tel:'042-822-6308', left:40.48, top:45.43, lat:36.398090, lng:127.309278},
+    {name:'스위스안경콘택트 오렌즈', addr:'유성구 노은로 158', tel:'042-477-0122', left:44.17, top:52.65, lat:36.373646, lng:127.318404},
+    {name:'신동아공인중개사', addr:'유성구 배울2로 42-0,5단지 상가 107호', tel:'042-936-8833', left:72.05, top:38.94, lat:36.420063, lng:127.387248},
+    {name:'아름다운약국', addr:'유성구 지족동,916-14', tel:'042-822-1191', left:45.79, top:52.31, lat:36.374809, lng:127.322398},
+    {name:'알파문구 노은점', addr:'유성구 지족동', tel:'042-476-6114', left:44.62, top:52.10, lat:36.375535, lng:127.319502},
+    {name:'알파문구 전민점', addr:'유성구 전민로58번길 2', tel:'042-862-2541', left:77.40, top:45.54, lat:36.397743, lng:127.400466},
+    {name:'야쿠르트(노은점)', addr:'유성구 은구비남로7번길 23-0,626-1', tel:'042-822-1886', left:43.36, top:52.74, lat:36.373349, lng:127.316388},
+    {name:'야쿠르트(유성점)', addr:'유성구 장대동,354-6', tel:'042-826-4966', left:52.08, top:56.47, lat:36.360718, lng:127.337934},
+    {name:'연주하다피아노', addr:'유성구 노은로426번길 15-0,104호', tel:'042-822-6787', left:49.61, top:47.84, lat:36.389953, lng:127.331828},
+    {name:'열매마트', addr:'유성구 장대동,265-2', tel:'042-824-1135', left:49.92, top:56.85, lat:36.359459, lng:127.332595},
+    {name:'예뻐지다', addr:'유성구 진잠로149번길 37', tel:'', left:43.70, top:72.86, lat:36.305244, lng:127.317241},
+    {name:'오드카라멜', addr:'유성구 월드컵대로308번길 21-13', tel:'', left:50.85, top:60.40, lat:36.347440, lng:127.334898},
+    {name:'월드약국', addr:'유성구 은구비로 36', tel:'042-477-7968', left:44.41, top:52.08, lat:36.375587, lng:127.319001},
+    {name:'이마트24 대전전민희망점', addr:'유성구 전민로46번길 15', tel:'', left:77.65, top:45.79, lat:36.396881, lng:127.401097},
+    {name:'이마트24 반석주공', addr:'유성구 반석동로 70', tel:'042-824-9790', left:41.35, top:46.83, lat:36.393352, lng:127.311433},
+    {name:'이미지안경콘텍트', addr:'유성구 신성동,210-22', tel:'042-861-0140', left:57.16, top:48.62, lat:36.387296, lng:127.350483},
+    {name:'이수통신', addr:'유성구 반석동로 38', tel:'042-721-6556', left:41.68, top:47.58, lat:36.390824, lng:127.312235},
+    {name:'자운대꽃사랑', addr:'유성구 자운로97번길 410', tel:'042-862-3088', left:52.02, top:40.94, lat:36.413292, lng:127.337794},
+    {name:'장보고할인마트', addr:'유성구 원내동,337-11', tel:'042-542-2687', left:44.04, top:74.88, lat:36.298416, lng:127.318085},
+    {name:'전민공터영어 교습소', addr:'유성구 전민로 52', tel:'', left:77.40, top:45.70, lat:36.397202, lng:127.400459},
+    {name:'책방거듭나기', addr:'유성구 전민동,348-14', tel:'042-863-1001', left:77.41, top:45.38, lat:36.398276, lng:127.400487},
+    {name:'카페 펠리쓰', addr:'유성구 궁동로 20', tel:'042-822-9009', left:55.98, top:55.80, lat:36.362994, lng:127.347569},
+    {name:'큐마트', addr:'유성구 교촌동,623-7', tel:'-541-3353', left:43.78, top:72.98, lat:36.304829, lng:127.317439},
+    {name:'태권슐레', addr:'유성구 학하서로 53', tel:'042-822-5333', left:36.66, top:61.82, lat:36.342626, lng:127.299848},
+    {name:'태평양약국', addr:'유성구 대정동,312-6', tel:'042-543-5006', left:45.26, top:70.43, lat:36.313449, lng:127.321077},
+    {name:'테크노대덕공인중개사', addr:'유성구 배울2로 78-0,상가동 108호', tel:'042-936-6363', left:73.21, top:39.16, lat:36.419338, lng:127.390108},
+    {name:'하나로약국', addr:'유성구 관평동,916', tel:'042-935-3467', left:72.44, top:38.09, lat:36.422944, lng:127.388228},
+    {name:'한마을약국', addr:'유성구 송강동,200-4', tel:'042-935-0054', left:71.13, top:35.92, lat:36.430317, lng:127.384983},
+    {name:'한밭하이퍼마켓', addr:'유성구 장대동,328-1', tel:'042-824-5191', left:50.95, top:55.80, lat:36.363002, lng:127.335133},
+    {name:'한솔약국', addr:'유성구 송강동,193-13', tel:'042-933-5465', left:71.25, top:35.14, lat:36.432943, lng:127.385275},
+    {name:'한양문구', addr:'유성구 송강동,8-2', tel:'042-934-4025', left:70.12, top:34.32, lat:36.435705, lng:127.382487},
+    {name:'해오름사회서비스센터', addr:'유성구 원신흥로55번길 53-12', tel:'042-826-5312', left:54.21, top:62.39, lat:36.340700, lng:127.343199},
+    {name:'홀리영어학원', addr:'유성구 지족로 154', tel:'', left:37.77, top:51.30, lat:36.378223, lng:127.302594},
   ];
 
   // ───────────────────────────────────────────────────────────────
@@ -1371,8 +1444,25 @@
     schoolButtons.push({el:btn, sc});
   });
 
+  const GUARD_COLOR = '#E0507A';
+  const guardButtons = [];
+  GUARDS.forEach(g=>{
+    const btn = document.createElement('button');
+    btn.className = 'school-dot guard';
+    btn.style.left = g.left + '%';
+    btn.style.top = g.top + '%';
+    btn.style.setProperty('--c', GUARD_COLOR);
+    btn.setAttribute('aria-label', g.name + ' 아동안전지킴이집');
+    btn.innerHTML = '<i></i>';
+    btn.addEventListener('click', ()=>openGuard(g));
+    // 63곳이 촘촘해서 위에 올리면 시설 핀을 덮는다. 맨 앞에 끼워 모든 마커 아래에 깐다.
+    pinLayer.insertBefore(btn, pinLayer.firstChild);
+    guardButtons.push(btn);
+  });
+
   const LAYERS = [
     {id:'facility', label:'청소년시설', color:'#78B6E8', on:true},
+    {id:'guard',    label:'지킴이집',   color:GUARD_COLOR, on:false},
     {id:'chest',    label:'급식카드',   color:'var(--gold)', on:true},
     {id:'초',       label:'초등학교',   color:SCHOOL_COLOR['초'], on:false},
     {id:'중',       label:'중학교',     color:SCHOOL_COLOR['중'], on:false},
@@ -1397,6 +1487,7 @@
     Object.values(pinButtons).forEach(b=>{ b.hidden = !layerOn('facility'); });
     chestButtons.forEach(b=>{ b.hidden = !layerOn('chest'); });
     schoolButtons.forEach(({el, sc})=>{ el.hidden = !layerOn(sc.lv); });
+    guardButtons.forEach(b=>{ b.hidden = !layerOn('guard'); });
     legend.hidden = !layerOn('facility');
   }
 
@@ -1675,6 +1766,11 @@
       lat:sc.lat, lng:sc.lng,
       layer:sc.lv, marker:() => schoolButtons[i].el, open:() => openSchool(sc),
     })),
+    ...GUARDS.map((g, i) => ({
+      name:g.name, meta:'아동안전지킴이집', color:GUARD_COLOR,
+      lat:g.lat, lng:g.lng,
+      layer:'guard', marker:() => guardButtons[i], open:() => openGuard(g),
+    })),
   ];
 
   function closeSearch(){
@@ -1844,8 +1940,17 @@
       });
     });
 
+    if(layerOn('guard')){
+      GUARDS.forEach((g, i) => pool.push({
+        key:'g:'+i,
+        badge:`<span class="legend-num" style="background:${GUARD_COLOR};border-radius:6px">지</span>`,
+        name:g.name, meta:'아동안전지킴이집',
+        dist:haversine(lat, lng, g.lat, g.lng),
+      }));
+    }
+
     if(!pool.length){
-      showLocateMessage('지금 지도에 켜 둔 항목이 없어요. 위쪽 버튼으로 청소년시설이나 학교를 켜 주세요.');
+      showLocateMessage('지금 지도에 켜 둔 항목이 없어요. 위쪽 버튼으로 청소년시설·학교·지킴이집을 켜 주세요.');
       return;
     }
 
@@ -1870,8 +1975,8 @@
       btn.addEventListener('click', ()=>{
         const [kind, id] = btn.dataset.key.split(':');
         closeModal();
-        flashMarker(kind === 'f'
-          ? pinButtons[id]
+        flashMarker(kind === 'f' ? pinButtons[id]
+          : kind === 'g' ? guardButtons[Number(id)]
           : schoolButtons[Number(id)].el);
       });
     });
@@ -1931,6 +2036,20 @@
       <h3>${sc.name}</h3>
       <p>지도 위 점은 실제 위치를 섬 그림에 맞춰 옮긴 자리예요. 겹치는 학교끼리는 조금씩 떨어뜨려 놨어요.</p>
       ${routeLinks(sc.name, sc.lat, sc.lng)}
+      <button class="modal-close" id="closeBtn">닫기</button>`;
+    bindClose();
+    modal.showModal();
+  }
+
+  function openGuard(g){
+    const tel = g.tel ? `<p>전화 <a href="tel:${esc(g.tel)}">${esc(g.tel)}</a></p>` : '';
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:${GUARD_COLOR}">아동안전지킴이집</span>
+      <h3>${esc(g.name)}</h3>
+      <p>무섭거나 길을 잃었을 때, 누가 따라오는 것 같을 때 <strong>바로 들어가서 도와 달라고 말할 수 있는 곳</strong>이에요. 가게 문에 노란 지킴이집 스티커가 붙어 있어요.</p>
+      <p>${esc(g.addr)}</p>
+      ${tel}
+      ${routeLinks(g.name, g.lat, g.lng)}
       <button class="modal-close" id="closeBtn">닫기</button>`;
     bindClose();
     modal.showModal();
