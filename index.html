@@ -540,6 +540,13 @@
     line-height:1.7;
     text-align:center;
   }
+  footer.notes p{margin:0 0 8px;}
+  /* 정보 출처는 화면 맨 아래에 항목별로 모아 둔다. 데이터를 새로 쓰면 여기에 한 줄 더한다. */
+  .sources{margin:18px auto 0;padding:14px 0 0;border-top:1px dashed var(--line,#D6E3DF);
+    list-style:none;text-align:left;display:grid;gap:4px;max-width:520px;}
+  .sources-title{font-family:'Jua',sans-serif;font-size:14px;color:var(--ink);margin:0 0 4px;font-weight:400;}
+  .sources b{color:var(--ink);font-weight:700;margin-right:6px;}
+  .sources a{color:inherit;}
 
   dialog#modal{
     border:none;
@@ -1010,10 +1017,18 @@
   </div>
 
   <footer class="notes">
-    경계·도로는 통계청 행정동 경계와 실제 간선도로(유성대로·대덕대로·북유성대로)를 바탕으로 그렸어요. 시설 정보는 2026년 10월 기준 도로명주소로 확인했어요.
-    시설 11곳과 학교 69곳은 실제 위경도를 섬 윤곽에 맞춰 찍은 자리예요 — 서로 겹치는 곳끼리는 조금씩 떨어뜨려 놔서 평균 100m쯤 밀려 있어요. 학교 목록과 섬 바깥 지도는 OpenStreetMap(© OpenStreetMap 기여자), 날씨·미세먼지는 Open-Meteo에서 가져와요.
-    아이누리카드(급식카드)는 2025년부터 BC카드 가맹 일반음식점 전체(대전 23,992곳)로 사용처가 넓어졌어요 — 예전처럼 정해진 가맹점만 찾아다닐 필요 없이, 편의점은 물론 왠만한 식당에서도 바로 쓸 수 있어요.
-    더 궁금하면 <a href="http://dreamtree.shinhancard.com/waf/opendatam" target="_blank" rel="noopener">아이누리카드 가맹점 조회</a>에서, 또는 근처 CU·GS25·세븐일레븐에서 바로 물어보세요.
+    <p>시설 11곳과 학교 69곳은 실제 위경도를 섬 윤곽에 맞춰 찍은 자리예요 — 서로 겹치는 곳끼리는 조금씩 떨어뜨려 놔서 평균 100m쯤 밀려 있어요.</p>
+    <p>아이누리카드(급식카드)는 2025년부터 BC카드 가맹 일반음식점 전체(대전 23,992곳)로 사용처가 넓어졌어요 — 예전처럼 정해진 가맹점만 찾아다닐 필요 없이, 편의점은 물론 왠만한 식당에서도 바로 쓸 수 있어요.
+    더 궁금하면 <a href="http://dreamtree.shinhancard.com/waf/opendatam" target="_blank" rel="noopener">아이누리카드 가맹점 조회</a>에서, 또는 근처 CU·GS25·세븐일레븐에서 바로 물어보세요.</p>
+    <ul class="sources">
+      <li><h2 class="sources-title">정보 출처</h2></li>
+      <li><b>행정동 경계</b>통계청 행정동 경계</li>
+      <li><b>도로·하천·학교·섬 바깥 지도</b>OpenStreetMap (©&nbsp;OpenStreetMap 기여자)</li>
+      <li><b>청소년 시설</b>도로명주소로 확인 (2026년 10월 기준), 위치는 Nominatim(OpenStreetMap)으로 변환</li>
+      <li><b>날씨·미세먼지</b>Open-Meteo (일부 기기에서는 기온만 wttr.in)</li>
+      <li><b>급식카드 가맹점</b><a href="http://dreamtree.shinhancard.com/waf/opendatam" target="_blank" rel="noopener">신한카드 아이누리카드 가맹점 조회</a></li>
+      <li><b>우체국 소식</b>운영자가 직접 올린 소식</li>
+    </ul>
   </footer>
 </div>
 
