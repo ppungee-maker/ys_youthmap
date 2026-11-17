@@ -1390,6 +1390,8 @@
 
   // 마커의 지도상 위치(%)를 기억해 두고, 매 변환마다 화면 좌표를 직접 계산한다.
   // 레이어를 확대해 놓고 마커를 되줄이면 작게 래스터화된 그림을 다시 키우게 돼 흐려진다.
+  // 마커를 pinLayer 에 다 붙인 뒤에 와야 한다 — children 을 여기서 한 번만 훑으므로
+  // 이 아래에서 추가한 마커는 등록되지 않고, 오류 없이 bringIntoView 만 조용히 멈춘다.
   const markers = [...pinLayer.children].map(el => {
     const m = {el, lx: parseFloat(el.style.left), ly: parseFloat(el.style.top),
                ay: el.classList.contains('pin') ? -100 : -50};
