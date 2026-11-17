@@ -483,6 +483,20 @@
     filter:drop-shadow(0 3px 2px rgba(74,64,56,.3));
   }
   .post-wrap{position:relative;display:inline-flex;}
+  .post-icon{width:48px;height:48px;}   /* 상자(44px)보다 10% 크게 — 외곽의 빈 땅에 혼자 있어서 여유가 있다 */
+  /* 우체국 간판. 아이콘 위에 띄워 두어(absolute) 마커의 기준점과 크기는 그대로 둔다.
+     봉투 그림은 viewBox 44 중 y=13 에서 시작하므로, 간판 아랫변을 거기(위에서 29.5%)에
+     맞추되 살짝 띄워, 간판이 봉투 윗변을 가리지 않게 한다. */
+  .post-sign{
+    position:absolute;bottom:76%;left:50%;transform:translateX(-50%);
+    padding:2px 8px 3px;border-radius:7px;
+    background:var(--accent-coral-deep);color:#FFFFFF;
+    font-family:'Jua',sans-serif;font-size:12px;line-height:1.15;white-space:nowrap;
+    box-shadow:0 0 0 2px #FFFFFF, 0 2px 3px rgba(74,64,56,.35);
+  }
+  /* 안 읽은 소식 숫자는 봉투 오른쪽 아래(예전 체크 표시 자리, viewBox 32,29)에 단다 */
+  .post-wrap .badge{top:66%;left:73%;right:auto;transform:translate(-50%,-50%);
+    min-width:16px;height:16px;padding:0 4px;font-size:10px;box-shadow:0 0 0 2px #FFFFFF;}
   .badge{
     position:absolute;
     top:-5px;right:-7px;
@@ -611,6 +625,9 @@
     .sheet{padding:14px 11px 18px;border-radius:24px;}
     .pin-glyph{width:34px;height:39px;}
     .chest-icon,.post-icon{width:30px;height:30px;}
+    .post-icon{width:33px;height:33px;}
+    .post-sign{font-size:10px;padding:1px 6px 2px;border-radius:6px;}
+    .post-wrap .badge{min-width:12px;height:12px;padding:0 3px;font-size:8.5px;box-shadow:0 0 0 1.5px #FFFFFF;}
     .badge{min-width:16px;height:16px;font-size:10px;top:-3px;right:-5px;box-shadow:0 0 0 2px var(--land);}
     .school-dot{width:36px;height:36px;}
     .school-dot i{width:11px;height:11px;margin:12.5px;}
@@ -913,7 +930,6 @@
           <g transform="translate(540,980)"><ellipse cy="22" rx="16" ry="4" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="20" rx="3" fill="#B98E57"/><circle cx="3" cy="-6" r="20" fill="var(--land-dark)"/><circle cx="-4" cy="-10" r="15" fill="var(--land-light)"/></g>
           <g transform="translate(900,850)"><ellipse cy="20" rx="14" ry="3.6" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="18" rx="3" fill="#B98E57"/><circle cx="3" cy="-5" r="18" fill="var(--land-dark)"/><circle cx="-3" cy="-9" r="13" fill="var(--land-light)"/></g>
           <g transform="translate(1140,1230)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="16" fill="var(--land-dark)"/><circle cx="-3" cy="-8" r="11.5" fill="var(--land-light)"/></g>
-          <g transform="translate(420,2150)"><ellipse cy="18" rx="13" ry="3.4" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="17" fill="var(--land-dark)"/><circle cx="-3" cy="-9" r="12.5" fill="var(--land-light)"/></g>
           <g transform="translate(650,1950)"><ellipse cy="16" rx="11" ry="3" fill="rgba(40,70,30,.2)"/><rect x="-2.5" y="2" width="5" height="14" rx="2.5" fill="#B98E57"/><circle cx="2" cy="-4" r="14" fill="var(--land-dark)"/><circle cx="-2.5" cy="-7" r="10" fill="var(--land-light)"/></g>
           <g transform="translate(700,1340)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="16" fill="var(--land-dark)"/><circle cx="-3" cy="-8" r="11.5" fill="var(--land-light)"/></g>
           <g transform="translate(1060,760)"><ellipse cy="18" rx="12" ry="3.2" fill="rgba(40,70,30,.2)"/><rect x="-3" y="2" width="6" height="16" rx="3" fill="#B98E57"/><circle cx="2.5" cy="-5" r="16" fill="var(--land-dark)"/><circle cx="-3" cy="-8" r="11.5" fill="var(--land-light)"/></g>
@@ -949,7 +965,7 @@
            건물을 살짝 가리는 편이 나아서 마커 위에 그린다. 클릭은 그대로 통과시킨다. -->
       <svg class="sign-layer" viewBox="-157 -361 1914 3248" aria-hidden="true">
         <g id="rotGS" font-family="'Jua',sans-serif" text-anchor="middle">
-          <g transform="translate(708,1498) rotate(2.5)">
+          <g transform="translate(708,1555) rotate(-10)">
             <ellipse cy="16" rx="101" ry="14" fill="rgba(40,70,30,.22)"/>
             <rect x="-14.0" y="-112.0" width="28.0" height="128.0" rx="10.0" fill="#A87C4A"/>
             <rect x="-6.0" y="-112.0" width="8.0" height="128.0" fill="#C2956A" opacity=".55"/>
@@ -1387,8 +1403,6 @@
         <path d="M5 28 h34 v1 a8 8 0 0 1 -8 8 h-18 a8 8 0 0 1 -8 -8 Z" fill="rgba(40,28,16,.09)"/>
         <path d="M7 17 L22 29 L37 17 L37 20 L22 32 L7 20 Z" fill="rgba(40,28,16,.1)"/>
         <path d="M7 17 L22 29 L37 17" fill="none" stroke="var(--accent-green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="32" cy="29" r="7.5" fill="var(--accent-coral)"/>
-        <path d="M28.5 29.5 l2.4 2.6 l4.8 -5.6" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`;
   }
 
@@ -1513,10 +1527,11 @@
 
   const postBtn = document.createElement('button');
   postBtn.className = 'post-btn';
-  postBtn.style.left = '56%';
-  postBtn.style.top = '44%';
+  // 섬 가운데는 시설·상자·표지판이 몰려 우체국이 묻혔다. 도안 해안마을 아래 빈 땅으로 뺐다.
+  postBtn.style.left = '30.56%';
+  postBtn.style.top = '79.3%';
   postBtn.setAttribute('aria-label', '우체국 새소식 보기');
-  postBtn.innerHTML = `<span class="post-wrap">${postSvg()}<span class="badge" id="badge" hidden></span></span>`;
+  postBtn.innerHTML = `<span class="post-wrap">${postSvg()}<span class="post-sign" aria-hidden="true">우체국</span><span class="badge" id="badge" hidden></span></span>`;
   postBtn.addEventListener('click', openPost);
   pinLayer.appendChild(postBtn);
 
