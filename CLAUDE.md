@@ -32,7 +32,7 @@ Beware the history here: pin `left`/`top` percentages were originally chosen *by
 Two traps here cost a round of broken builds, both silent — nothing throws, the map just stops working:
 
 - **Never `setPointerCapture` on `pointerdown`.** Capture retargets the compatibility `click` to `#mapWrap`, so every pin, chest, chip and button underneath stops responding while the map still looks fine. Capture only after the pointer has moved past `DRAG_SLOP`.
-- **`#pinLayer` must keep `transform-origin: 0 0`.** The SVG zooms by narrowing its viewBox, which scales about the frame's top-left; a centre-origin CSS transform on the marker layer scales about the middle, and the two drift apart by `C·(1−z)` — markers float off into the sea the moment you zoom. Rotation needs a centre pivot, so it lives on the `#pinRotate` wrapper instead of being merged in.
+- **Never scale the marker layer.** Markers are not transformed as a group at all: `applyTransform()` writes each one's final screen position (`markers[]` keeps its map position as a percentage). Scaling the layer and counter-scaling each marker back does hold their size, but the browser rasterises the shrunken icon and then magnifies it, so everything blurs as you zoom — and any `transition` on that counter-scale makes markers balloon and snap on every step. Placing them directly also means no counter-rotation is needed to keep them upright.
 
 Because rotation sits outside pan and zoom, screen coordinates have to be converted back into the unrotated frame before use — `unrotate()` for a focal point, `unrotateDelta()` for a drag — or dragging goes sideways by exactly the rotation angle.
 
