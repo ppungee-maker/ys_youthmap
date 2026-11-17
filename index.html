@@ -1951,7 +1951,7 @@
   }
 
   // 카드는 늘 자리를 지킨다. 숨겨 버리면 못 가져온 건지 원래 없는 건지 알 수가 없다.
-  const weather = {ok:false};
+  const weather = {ok:false, dust:false};
   const weatherCard = document.createElement('button');
   weatherCard.className = 'weather-card';
   weatherCard.type = 'button';
@@ -1963,12 +1963,13 @@
 
   function renderWeather(state){
     if(state === 'ok'){
-      const g = dustGrade(weather.pm10, weather.pm25);
+      const g = weather.dust ? dustGrade(weather.pm10, weather.pm25) : null;
       weatherCard.innerHTML = `${WX_ICON[weather.icon]}
         <span class="wx-temp">${weather.temp}°</span>
-        <span class="wx-badge" style="background:${g.c}">${g.t}</span>`;
+        ${g ? `<span class="wx-badge" style="background:${g.c}">${g.t}</span>` : ''}`;
       weatherCard.setAttribute('aria-label',
-        `지금 유성구 ${weather.temp}도 ${WX_TEXT[weather.icon]}, 미세먼지 ${g.t}. 자세히 보기`);
+        `지금 유성구 ${weather.temp}도 ${WX_TEXT[weather.icon]}`
+        + (g ? `, 미세먼지 ${g.t}` : '') + '. 자세히 보기');
     }else{
       weatherCard.innerHTML = `${WX_ICON.cloud}
         <span class="wx-temp">–°</span>
@@ -1979,14 +1980,15 @@
   }
 
   function openWeather(){
-    const g = dustGrade(weather.pm10, weather.pm25);
+    const g = weather.dust ? dustGrade(weather.pm10, weather.pm25) : null;
     modalInner.innerHTML = `
       <span class="modal-tag" style="background:var(--accent-green)">지금 유성구</span>
       <h3>${weather.temp}° ${WX_TEXT[weather.icon]}</h3>
-      <div class="wx-rows">
+      <div class="wx-rows">${g ? `
         <div><span>미세먼지 (PM10)</span><b>${Math.round(weather.pm10)} ㎍/㎥</b></div>
         <div><span>초미세먼지 (PM2.5)</span><b>${Math.round(weather.pm25)} ㎍/㎥</b></div>
-        <div><span>대기질</span><b style="color:${g.c}">${g.t}</b></div>
+        <div><span>대기질</span><b style="color:${g.c}">${g.t}</b></div>`
+        : '<div><span>미세먼지</span><b>못 가져왔어요</b></div>'}
       </div>
       <p style="margin-top:12px;font-size:12.5px;color:var(--ink-soft)">유성구청 부근 기준이에요. 자료는 Open-Meteo에서 가져와요.</p>
       <button class="modal-close" id="closeBtn">닫기</button>`;
@@ -2009,23 +2011,28 @@
     } finally { clearTimeout(timer); }
   }
 
+  // 기온과 미세먼지는 도메인이 다르다. 묶어서 받으면 한쪽만 막혀도 둘 다 잃으므로
+  // 따로 받아서 성공한 쪽만이라도 보여준다.
   async function loadWeather(tries = 0){
-    try{
-      const [wx, air] = await Promise.all([
-        fetchJson(wxUrl('api.open-meteo.com', 'forecast') + '&current=temperature_2m,weather_code'),
-        fetchJson(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5'),
-      ]);
-      weather.temp = Math.round(wx.current.temperature_2m);
-      weather.icon = wxIconFor(wx.current.weather_code);
-      weather.pm10 = air.current.pm10;
-      weather.pm25 = air.current.pm2_5;
+    const [wx, air] = await Promise.allSettled([
+      fetchJson(wxUrl('api.open-meteo.com', 'forecast') + '&current=temperature_2m,weather_code'),
+      fetchJson(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5'),
+    ]);
+    if(wx.status === 'fulfilled'){
+      weather.temp = Math.round(wx.value.current.temperature_2m);
+      weather.icon = wxIconFor(wx.value.current.weather_code);
       weather.ok = true;
-      renderWeather('ok');
-    }catch(e){
-      // 첫 실패에서 바로 알려준다. 재시도를 다 기다리면 30초 넘게 '가져오는 중'에 묶인다.
-      renderWeather('fail');
-      if(tries < 2) setTimeout(() => loadWeather(tries + 1), 3000 * (tries + 1));
     }
+    if(air.status === 'fulfilled'){
+      weather.pm10 = air.value.current.pm10;
+      weather.pm25 = air.value.current.pm2_5;
+      weather.dust = true;
+    }
+    if(weather.ok) renderWeather('ok');
+    else renderWeather('fail');          // 기온조차 못 받았을 때만 실패로 본다
+    // 아직 못 받은 쪽이 있으면 조용히 다시 시도한다
+    if((!weather.ok || !weather.dust) && tries < 2)
+      setTimeout(() => loadWeather(tries + 1), 3000 * (tries + 1));
   }
   renderWeather('loading');
   loadWeather();
