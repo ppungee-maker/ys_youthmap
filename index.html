@@ -659,22 +659,43 @@
       <p>실제 유성구 13개 행정동 경계를 그대로 그린 지도예요. 건물을 눌러 청소년 시설과 소식을 찾아보세요.</p>
     </div>
     <div class="mascot">
-      <svg viewBox="0 0 100 120">
-        <ellipse cx="50" cy="112" rx="26" ry="5" fill="rgba(74,64,56,.15)"/>
-        <path d="M30 70 Q28 95 34 112 L66 112 Q72 95 70 70 Z" fill="#5B8FD6"/>
-        <rect x="14" y="60" width="18" height="22" rx="4" fill="#4F7DBF" stroke="#4A4038" stroke-width="2"/>
-        <circle cx="50" cy="42" r="22" fill="#F7C999" stroke="#4A4038" stroke-width="2"/>
-        <path d="M28 38 Q30 16 50 15 Q72 15 72 38 Q60 30 50 30 Q40 30 28 38 Z" fill="#3E63A0" stroke="#4A4038" stroke-width="2"/>
-        <circle cx="50" cy="20" r="4" fill="#3E63A0" stroke="#4A4038" stroke-width="2"/>
-        <circle cx="41" cy="44" r="2.3" fill="#4A4038"/>
-        <circle cx="59" cy="44" r="2.3" fill="#4A4038"/>
-        <path d="M43 52 Q50 57 57 52" fill="none" stroke="#4A4038" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="30" cy="40" r="4" fill="#F4A98B"/>
-        <circle cx="70" cy="40" r="4" fill="#F4A98B"/>
-        <g transform="translate(74,58)">
-          <circle r="11" fill="none" stroke="#4A4038" stroke-width="2.5"/>
-          <path d="M0 0 L5 -5 L2 2 Z" fill="var(--accent-coral-deep)"/>
-          <path d="M0 0 L-5 5 L-2 -2 Z" fill="#FFFFFF" stroke="#4A4038" stroke-width="1"/>
+      <svg viewBox="0 0 100 120" aria-hidden="true">
+        <ellipse cx="50" cy="112" rx="42" ry="5" fill="rgba(74,64,56,.15)"/>
+        <!-- 열린 뚜껑 -->
+        <path d="M17 64 L23 30 Q50 19 77 30 L83 64 Z" fill="#9A5B2E" stroke="#4A4038" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M23 60 L27 35 Q50 26 73 35 L77 60 Z" fill="#74401F"/>
+        <!-- 넘치는 금화 더미 -->
+        <path d="M17 66 Q20 50 33 48 Q41 39 50 43 Q60 37 68 46 Q81 48 83 66 Z" fill="var(--gold)" stroke="#4A4038" stroke-width="2" stroke-linejoin="round"/>
+        <g fill="var(--gold-light)" stroke="var(--gold-dark)" stroke-width="1.6">
+          <circle cx="30" cy="55" r="5"/><circle cx="42" cy="47" r="5"/><circle cx="58" cy="45" r="5"/>
+          <circle cx="71" cy="55" r="5"/><circle cx="51" cy="56" r="5"/><circle cx="38" cy="61" r="4.5"/>
+          <circle cx="63" cy="61" r="4.5"/>
+        </g>
+        <polygon points="45,52 49,47 53,52 49,58" fill="#E8604C" stroke="#4A4038" stroke-width="1.4" stroke-linejoin="round"/>
+        <polygon points="63,50 67,46 71,50 67,55" fill="#5B8FD6" stroke="#4A4038" stroke-width="1.4" stroke-linejoin="round"/>
+        <polygon points="28,49 31,45 34,49 31,53" fill="#6BBF7A" stroke="#4A4038" stroke-width="1.4" stroke-linejoin="round"/>
+        <!-- 작은 왕관 -->
+        <path d="M44 40 L44 31 L48 35 L51 29 L54 35 L58 31 L58 40 Z" fill="var(--gold)" stroke="#4A4038" stroke-width="1.6" stroke-linejoin="round"/>
+        <!-- 상자 몸통 -->
+        <rect x="14" y="64" width="72" height="42" rx="5" fill="#B9763F" stroke="#4A4038" stroke-width="2"/>
+        <path d="M16 79 H84 M16 93 H84" stroke="#8E5530" stroke-width="2"/>
+        <rect x="15" y="65" width="7" height="40" fill="var(--gold-dark)"/>
+        <rect x="78" y="65" width="7" height="40" fill="var(--gold-dark)"/>
+        <rect x="11" y="60" width="78" height="8" rx="3" fill="var(--gold-dark)" stroke="#4A4038" stroke-width="2"/>
+        <rect x="43" y="70" width="14" height="16" rx="3" fill="var(--gold)" stroke="#4A4038" stroke-width="2"/>
+        <circle cx="50" cy="76" r="2.2" fill="#4A4038"/>
+        <rect x="49" y="77" width="2" height="5" rx="1" fill="#4A4038"/>
+        <!-- 테두리 너머로 흘러내린 금화 -->
+        <g fill="var(--gold-light)" stroke="var(--gold-dark)" stroke-width="1.6">
+          <circle cx="24" cy="66" r="5"/><circle cx="77" cy="67" r="4.5"/>
+          <circle cx="91" cy="104" r="5"/>
+          <ellipse cx="9" cy="109" rx="6" ry="2.6"/><ellipse cx="80" cy="111" rx="5.5" ry="2.3"/>
+        </g>
+        <!-- 반짝임 -->
+        <g fill="#FFFFFF" stroke="var(--gold-dark)" stroke-width="1.2" stroke-linejoin="round">
+          <path d="M20 22 L22 27 L27 29 L22 31 L20 36 L18 31 L13 29 L18 27 Z"/>
+          <path d="M84 30 L85.5 34 L89.5 35.5 L85.5 37 L84 41 L82.5 37 L78.5 35.5 L82.5 34 Z"/>
+          <path d="M66 14 L67 17 L70 18 L67 19 L66 22 L65 19 L62 18 L65 17 Z"/>
         </g>
       </svg>
     </div>
