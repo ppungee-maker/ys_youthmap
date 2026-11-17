@@ -11,7 +11,7 @@ There is no build, lint, or test tooling — the entire app is a single static H
 
 ## Architecture
 
-Everything — markup, CSS, inline SVG artwork, and JS — lives in the one `index.html` file (~400KB, most of it embedded OSM path data). No framework, no external JS libraries, no package manager. Google Fonts (`Jua`, `Gowun Dodum`) are pulled via `<link>` tags.
+Everything — markup, CSS, inline SVG artwork, and JS — lives in the one `index.html` file (~400KB, most of it embedded OSM path data). No framework, no external JS libraries, no package manager. Google Fonts (`Jua`, `Gowun Dodum`, and `Gaegu` 700 for the zone signposts only — the user picked it from a side-by-side comparison as the cuter, storybook choice) are pulled via `<link>` tags. Signpost text is 68 units, the largest size that keeps 테크노밸리 등대 clear of the nail heads at the board ends.
 
 **The map is drawn in a storybook style, but its geometry is real.** The big SVG (`#islandSvg`) draws Yuseong-gu's 13 행정동 as a single cohesive island. Only the decorative layer — trees, terrain shading, building icons, compass — is invented. The **outer boundary was traced from the real administrative boundary** (its bounding box has an aspect ratio of 0.589 against the real district's 0.593), and the **road network and waterways are real OSM geometry** projected onto it, not hand-drawn.
 
