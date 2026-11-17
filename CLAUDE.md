@@ -72,6 +72,8 @@ The surrounding Daejeon road network is still drawn, but *over* the sea at very 
 
 **Weather card:** bottom-left of the map, fed by two keyless CORS-friendly Open-Meteo endpoints (forecast + air-quality) for a fixed point near 유성구청 — deliberately not the user's position, so it renders without a location prompt. WMO weather codes map to one of six inline SVG icons; PM10/PM2.5 map to 환경부 grades.
 
+Some devices cannot reach `open-meteo.com` at all — a user's phone could not even load the URL typed straight into the address bar, while the same page worked on desktop, so it is the domain being filtered (ad-block list or carrier), not the code. `wttr.in` is a keyless CORS-friendly fallback that covers temperature only; it reports WWO codes, which `wwoToWmo()` maps onto the WMO codes the icons expect. There is no keyless substitute for the dust reading, so that simply drops out on such networks.
+
 Temperature and dust come from two different hosts and are fetched independently (`Promise.allSettled`): bundling them meant one blocked host cost both readings, and `air-quality-api.open-meteo.com` is the likelier of the two to be filtered. A missing dust reading just drops the badge.
 
 `fetch` has no default timeout, so every request goes through `fetchJson()` with an `AbortController`. A network that swallows the request instead of refusing it never settles the promise, and the card sat on its loading state forever with neither the retry nor the failure path ever running — that is what a blocked phone actually looks like, not a rejection.

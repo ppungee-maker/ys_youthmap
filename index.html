@@ -2011,6 +2011,25 @@
     } finally { clearTimeout(timer); }
   }
 
+  // open-meteo 가 막힌 기기가 있다(광고차단 목록·통신사). 기온만이라도 건지도록
+  // 다른 제공처를 예비로 둔다. wttr.in 은 WWO 코드를 쓰므로 WMO 로 옮겨 맞춘다.
+  function wwoToWmo(code){
+    const c = +code;
+    if([113].includes(c)) return 0;
+    if([116].includes(c)) return 2;
+    if([119,122,143,248,260].includes(c)) return 3;
+    if([179,182,185,227,230,281,284,311,314,317,320,323,326,329,332,335,338,350,368,371,374,377,392,395].includes(c)) return 71;
+    if([200,386,389].includes(c)) return 95;
+    return 61;   // 나머지는 비로 본다
+  }
+  async function loadBackupTemp(){
+    const d = await fetchJson('https://wttr.in/' + WX_LAT + ',' + WX_LNG + '?format=j1');
+    const c = d.current_condition[0];
+    weather.temp = Math.round(+c.temp_C);
+    weather.icon = wxIconFor(wwoToWmo(c.weatherCode));
+    weather.ok = true;
+  }
+
   // 기온과 미세먼지는 도메인이 다르다. 묶어서 받으면 한쪽만 막혀도 둘 다 잃으므로
   // 따로 받아서 성공한 쪽만이라도 보여준다.
   async function loadWeather(tries = 0){
@@ -2022,6 +2041,8 @@
       weather.temp = Math.round(wx.value.current.temperature_2m);
       weather.icon = wxIconFor(wx.value.current.weather_code);
       weather.ok = true;
+    }else{
+      try{ await loadBackupTemp(); }catch(e){}
     }
     if(air.status === 'fulfilled'){
       weather.pm10 = air.value.current.pm10;
