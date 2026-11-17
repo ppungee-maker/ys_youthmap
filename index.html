@@ -2001,7 +2001,7 @@
 
   // fetch 는 기본 시간 제한이 없다. 요청을 거절하지 않고 그냥 삼키는 망을 만나면
   // 영원히 매달려서 catch 도 재시도도 돌지 않고 '가져오는 중'에 멈춘다.
-  async function fetchJson(url, ms = 5000){
+  async function fetchJson(url, ms = 3000){
     const ac = new AbortController();
     const timer = setTimeout(() => ac.abort(), ms);
     try{
@@ -2025,35 +2025,45 @@
   async function loadBackupTemp(){
     const d = await fetchJson('https://wttr.in/' + WX_LAT + ',' + WX_LNG + '?format=j1');
     const c = d.current_condition[0];
-    weather.temp = Math.round(+c.temp_C);
-    weather.icon = wxIconFor(wwoToWmo(c.weatherCode));
-    weather.ok = true;
+    return {temp: Math.round(+c.temp_C), icon: wxIconFor(wwoToWmo(c.weatherCode))};
+  }
+
+  // 1순위가 실패한 뒤에야 예비를 부르면 막힌 기기에서 시간 제한을 두 번 다 써서
+  // 빈 카드를 오래 본다. 1.2초 안에 답이 없으면 예비도 같이 출발시키고 먼저 온 쪽을 쓴다.
+  // 정상 기기에서는 그 전에 답이 오므로 예비 요청은 아예 나가지 않는다.
+  function loadTemp(){
+    let answered = false;
+    const primary = fetchJson(wxUrl('api.open-meteo.com', 'forecast') + '&current=temperature_2m,weather_code')
+      .then(d => { answered = true;
+        return {temp: Math.round(d.current.temperature_2m), icon: wxIconFor(d.current.weather_code)}; });
+    const backup = new Promise(r => setTimeout(r, 1200))
+      .then(() => answered ? new Promise(()=>{}) : loadBackupTemp());
+    return Promise.any([primary, backup]);
   }
 
   // 기온과 미세먼지는 도메인이 다르다. 묶어서 받으면 한쪽만 막혀도 둘 다 잃으므로
-  // 따로 받아서 성공한 쪽만이라도 보여준다.
-  async function loadWeather(tries = 0){
-    const [wx, air] = await Promise.allSettled([
-      fetchJson(wxUrl('api.open-meteo.com', 'forecast') + '&current=temperature_2m,weather_code'),
-      fetchJson(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5'),
-    ]);
-    if(wx.status === 'fulfilled'){
-      weather.temp = Math.round(wx.value.current.temperature_2m);
-      weather.icon = wxIconFor(wx.value.current.weather_code);
+  // 따로 받아서 성공한 쪽만이라도 보여준다. 그리기도 따로 한다 — 둘을 같이 기다리면
+  // 기온이 0.3초에 와도 미세먼지가 늦는 동안 카드가 '…' 에 머문다. 먼저 온 쪽부터 그린다.
+  function loadWeather(tries = 0){
+    const temp = loadTemp().then(v => {
+      weather.temp = v.temp;
+      weather.icon = v.icon;
       weather.ok = true;
-    }else{
-      try{ await loadBackupTemp(); }catch(e){}
-    }
-    if(air.status === 'fulfilled'){
-      weather.pm10 = air.value.current.pm10;
-      weather.pm25 = air.value.current.pm2_5;
-      weather.dust = true;
-    }
-    if(weather.ok) renderWeather('ok');
-    else renderWeather('fail');          // 기온조차 못 받았을 때만 실패로 본다
-    // 아직 못 받은 쪽이 있으면 조용히 다시 시도한다
-    if((!weather.ok || !weather.dust) && tries < 2)
-      setTimeout(() => loadWeather(tries + 1), 3000 * (tries + 1));
+      renderWeather('ok');
+    }, () => {});
+    const air = fetchJson(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5')
+      .then(d => {
+        weather.pm10 = d.current.pm10;
+        weather.pm25 = d.current.pm2_5;
+        weather.dust = true;
+        if(weather.ok) renderWeather('ok');   // 기온이 아직이면 기온 쪽이 같이 그린다
+      }, () => {});
+    Promise.all([temp, air]).then(() => {
+      if(!weather.ok) renderWeather('fail');  // 기온조차 못 받았을 때만 실패로 본다
+      // 아직 못 받은 쪽이 있으면 조용히 다시 시도한다
+      if((!weather.ok || !weather.dust) && tries < 2)
+        setTimeout(() => loadWeather(tries + 1), 3000 * (tries + 1));
+    });
   }
   renderWeather('loading');
   loadWeather();
