@@ -70,7 +70,9 @@ The surrounding Daejeon road network is still drawn, but *over* the sea at very 
 
 **`hidden` needs the global override.** Any element that declares its own `display` beats the UA's `[hidden]{display:none}`, so `el.hidden = true` silently does nothing — hence the `[hidden]{display:none !important}` rule near the top. This bit three separate things before it was found: the place card appeared empty on load, the unread badge never cleared after reading notices, and the weather card sat visible before its data arrived, so tapping it opened a modal full of `undefined` and `NaN`.
 
-**Weather card:** bottom-left of the map, fed by two keyless CORS-friendly Open-Meteo endpoints (forecast + air-quality) for a fixed point near 유성구청 — deliberately not the user's position, so it renders without a location prompt. WMO weather codes map to one of six inline SVG icons; PM10/PM2.5 map to 환경부 grades. If either fetch fails the card stays hidden rather than showing a broken state.
+**Weather card:** bottom-left of the map, fed by two keyless CORS-friendly Open-Meteo endpoints (forecast + air-quality) for a fixed point near 유성구청 — deliberately not the user's position, so it renders without a location prompt. WMO weather codes map to one of six inline SVG icons; PM10/PM2.5 map to 환경부 grades.
+
+The card always holds its place and shows its state (`…` while loading, `–° 다시` after three failed tries, tap to retry). Hiding it on failure was tried and is worse: the user cannot tell a blocked request from a feature that was never there, and the first version of this compounded it by being visible *before* the data arrived, so an early tap opened a modal of `undefined`. Never let `openWeather()` run without `weather.ok`.
 
 **Persistence:** two `localStorage` keys. `yuseong_layers` holds the chip row's on/off state; `yuseong_seenNotices` holds the ids of notices already read, which drives the unread badge. It stores a list rather than a high-water date so that two notices posted on the same day both count as new.
 

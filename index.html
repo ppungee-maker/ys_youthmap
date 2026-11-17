@@ -1950,13 +1950,33 @@
     ][g];
   }
 
-  const weather = {};
+  // 카드는 늘 자리를 지킨다. 숨겨 버리면 못 가져온 건지 원래 없는 건지 알 수가 없다.
+  const weather = {ok:false};
   const weatherCard = document.createElement('button');
   weatherCard.className = 'weather-card';
   weatherCard.type = 'button';
-  weatherCard.hidden = true;
   document.getElementById('mapWrap').appendChild(weatherCard);
-  weatherCard.addEventListener('click', openWeather);
+  weatherCard.addEventListener('click', ()=>{
+    if(weather.ok) openWeather();
+    else { renderWeather('loading'); loadWeather(); }    // 실패했으면 눌러서 다시 시도
+  });
+
+  function renderWeather(state){
+    if(state === 'ok'){
+      const g = dustGrade(weather.pm10, weather.pm25);
+      weatherCard.innerHTML = `${WX_ICON[weather.icon]}
+        <span class="wx-temp">${weather.temp}°</span>
+        <span class="wx-badge" style="background:${g.c}">${g.t}</span>`;
+      weatherCard.setAttribute('aria-label',
+        `지금 유성구 ${weather.temp}도 ${WX_TEXT[weather.icon]}, 미세먼지 ${g.t}. 자세히 보기`);
+    }else{
+      weatherCard.innerHTML = `${WX_ICON.cloud}
+        <span class="wx-temp">–°</span>
+        <span class="wx-badge" style="background:var(--ink-soft)">${state === 'loading' ? '…' : '다시'}</span>`;
+      weatherCard.setAttribute('aria-label',
+        state === 'loading' ? '날씨를 가져오는 중' : '날씨를 못 가져왔어요. 눌러서 다시 시도');
+    }
+  }
 
   function openWeather(){
     const g = dustGrade(weather.pm10, weather.pm25);
@@ -1974,30 +1994,27 @@
     modal.showModal();
   }
 
+  const wxUrl = (host, path) =>
+    `https://${host}/v1/${path}?latitude=${WX_LAT}&longitude=${WX_LNG}&timezone=Asia%2FSeoul`;
+
   async function loadWeather(tries = 0){
     try{
       const [wx, air] = await Promise.all([
-        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LNG}&current=temperature_2m,weather_code&timezone=Asia%2FSeoul`).then(r=>r.json()),
-        fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${WX_LAT}&longitude=${WX_LNG}&current=pm10,pm2_5&timezone=Asia%2FSeoul`).then(r=>r.json()),
+        fetch(wxUrl('api.open-meteo.com', 'forecast') + '&current=temperature_2m,weather_code').then(r=>r.json()),
+        fetch(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5').then(r=>r.json()),
       ]);
       weather.temp = Math.round(wx.current.temperature_2m);
       weather.icon = wxIconFor(wx.current.weather_code);
       weather.pm10 = air.current.pm10;
       weather.pm25 = air.current.pm2_5;
-      const g = dustGrade(weather.pm10, weather.pm25);
-      weatherCard.innerHTML = `
-        ${WX_ICON[weather.icon]}
-        <span class="wx-temp">${weather.temp}°</span>
-        <span class="wx-badge" style="background:${g.c}">${g.t}</span>`;
-      weatherCard.setAttribute('aria-label',
-        `지금 유성구 ${weather.temp}도 ${WX_TEXT[weather.icon]}, 미세먼지 ${g.t}. 자세히 보기`);
-      weatherCard.hidden = false;
+      weather.ok = true;
+      renderWeather('ok');
     }catch(e){
-      // 실패해도 카드를 숨긴 채로 둔다 — 지도 자체는 영향을 받지 않는다.
-      // 다만 조용히 사라지면 고장인지 구분이 안 되므로 몇 번 더 시도한다.
       if(tries < 3) setTimeout(() => loadWeather(tries + 1), 2000 * (tries + 1));
+      else renderWeather('fail');      // 조용히 사라지지 않고, 눌러서 다시 시도할 수 있게 둔다
     }
   }
+  renderWeather('loading');
   loadWeather();
 
   function refreshBadge(){
