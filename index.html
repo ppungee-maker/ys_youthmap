@@ -2,6 +2,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>유성구 보물찾기</title>
+<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+<link rel="preconnect" href="https://air-quality-api.open-meteo.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -2041,6 +2043,22 @@
     return Promise.any([primary, backup]);
   }
 
+  // 지난 값을 기억해 두면 다시 들어왔을 때 기다릴 것 없이 바로 보여줄 수 있다.
+  // 한 시간이 넘은 값은 이미 날씨가 바뀌었을 수 있어 쓰지 않는다.
+  const WX_CACHE = 'yuseong_weather';
+  function saveWeather(){
+    try{ localStorage.setItem(WX_CACHE, JSON.stringify({...weather, at: Date.now()})); }catch(e){}
+  }
+  function loadCachedWeather(){
+    try{
+      const c = JSON.parse(localStorage.getItem(WX_CACHE) || 'null');
+      if(!c || !c.ok || Date.now() - c.at > 60 * 60 * 1000) return false;
+      Object.assign(weather, c);
+      renderWeather('ok');
+      return true;
+    }catch(e){ return false; }
+  }
+
   // 기온과 미세먼지는 도메인이 다르다. 묶어서 받으면 한쪽만 막혀도 둘 다 잃으므로
   // 따로 받아서 성공한 쪽만이라도 보여준다. 그리기도 따로 한다 — 둘을 같이 기다리면
   // 기온이 0.3초에 와도 미세먼지가 늦는 동안 카드가 '…' 에 머문다. 먼저 온 쪽부터 그린다.
@@ -2050,13 +2068,14 @@
       weather.icon = v.icon;
       weather.ok = true;
       renderWeather('ok');
+      saveWeather();
     }, () => {});
     const air = fetchJson(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5')
       .then(d => {
         weather.pm10 = d.current.pm10;
         weather.pm25 = d.current.pm2_5;
         weather.dust = true;
-        if(weather.ok) renderWeather('ok');   // 기온이 아직이면 기온 쪽이 같이 그린다
+        if(weather.ok){ renderWeather('ok'); saveWeather(); }   // 기온이 아직이면 기온 쪽이 같이 그린다
       }, () => {});
     Promise.all([temp, air]).then(() => {
       if(!weather.ok) renderWeather('fail');  // 기온조차 못 받았을 때만 실패로 본다
@@ -2065,8 +2084,8 @@
         setTimeout(() => loadWeather(tries + 1), 3000 * (tries + 1));
     });
   }
-  renderWeather('loading');
-  loadWeather();
+  if(!loadCachedWeather()) renderWeather('loading');   // 캐시가 있으면 바로 보여주고
+  loadWeather();                                       // 그러고 나서 조용히 최신값으로 바꾼다
 
   function refreshBadge(){
     const seen = getSeen();
