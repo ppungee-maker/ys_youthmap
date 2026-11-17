@@ -1997,11 +1997,23 @@
   const wxUrl = (host, path) =>
     `https://${host}/v1/${path}?latitude=${WX_LAT}&longitude=${WX_LNG}&timezone=Asia%2FSeoul`;
 
+  // fetch 는 기본 시간 제한이 없다. 요청을 거절하지 않고 그냥 삼키는 망을 만나면
+  // 영원히 매달려서 catch 도 재시도도 돌지 않고 '가져오는 중'에 멈춘다.
+  async function fetchJson(url, ms = 5000){
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), ms);
+    try{
+      const r = await fetch(url, {signal: ac.signal});
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } finally { clearTimeout(timer); }
+  }
+
   async function loadWeather(tries = 0){
     try{
       const [wx, air] = await Promise.all([
-        fetch(wxUrl('api.open-meteo.com', 'forecast') + '&current=temperature_2m,weather_code').then(r=>r.json()),
-        fetch(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5').then(r=>r.json()),
+        fetchJson(wxUrl('api.open-meteo.com', 'forecast') + '&current=temperature_2m,weather_code'),
+        fetchJson(wxUrl('air-quality-api.open-meteo.com', 'air-quality') + '&current=pm10,pm2_5'),
       ]);
       weather.temp = Math.round(wx.current.temperature_2m);
       weather.icon = wxIconFor(wx.current.weather_code);
@@ -2010,8 +2022,9 @@
       weather.ok = true;
       renderWeather('ok');
     }catch(e){
-      if(tries < 3) setTimeout(() => loadWeather(tries + 1), 2000 * (tries + 1));
-      else renderWeather('fail');      // 조용히 사라지지 않고, 눌러서 다시 시도할 수 있게 둔다
+      // 첫 실패에서 바로 알려준다. 재시도를 다 기다리면 30초 넘게 '가져오는 중'에 묶인다.
+      renderWeather('fail');
+      if(tries < 2) setTimeout(() => loadWeather(tries + 1), 3000 * (tries + 1));
     }
   }
   renderWeather('loading');

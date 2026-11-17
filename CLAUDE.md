@@ -72,6 +72,8 @@ The surrounding Daejeon road network is still drawn, but *over* the sea at very 
 
 **Weather card:** bottom-left of the map, fed by two keyless CORS-friendly Open-Meteo endpoints (forecast + air-quality) for a fixed point near 유성구청 — deliberately not the user's position, so it renders without a location prompt. WMO weather codes map to one of six inline SVG icons; PM10/PM2.5 map to 환경부 grades.
 
+`fetch` has no default timeout, so every request goes through `fetchJson()` with an `AbortController`. A network that swallows the request instead of refusing it never settles the promise, and the card sat on its loading state forever with neither the retry nor the failure path ever running — that is what a blocked phone actually looks like, not a rejection.
+
 The card always holds its place and shows its state (`…` while loading, `–° 다시` after three failed tries, tap to retry). Hiding it on failure was tried and is worse: the user cannot tell a blocked request from a feature that was never there, and the first version of this compounded it by being visible *before* the data arrived, so an early tap opened a modal of `undefined`. Never let `openWeather()` run without `weather.ok`.
 
 **Persistence:** two `localStorage` keys. `yuseong_layers` holds the chip row's on/off state; `yuseong_seenNotices` holds the ids of notices already read, which drives the unread badge. It stores a list rather than a high-water date so that two notices posted on the same day both count as new.
