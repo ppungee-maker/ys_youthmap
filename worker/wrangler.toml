@@ -1,0 +1,13 @@
+# 우체국 게시판 서버 설정 — 설치 방법은 HOWTO-소식올리기.md
+name = "ys-youthmap-notices"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+
+# 소식이 저장되는 KV 저장소. id 는 처음 설치할 때 만든 값으로 채운다.
+[[kv_namespaces]]
+binding = "NOTICES"
+id = "e782f8558d5946cc874d3bfdd8859351"
+
+# 관리자 아이디·비밀번호는 여기 적지 않는다 (이 파일은 공개 저장소에 올라간다).
+#   npx wrangler secret put ADMIN_ID
+#   npx wrangler secret put ADMIN_PASSWORD

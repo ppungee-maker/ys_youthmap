@@ -1,0 +1,5 @@
+# Cloudflare 로컬 개발용 비밀값·캐시 — 올리지 않는다
+worker/.dev.vars
+worker/.wrangler/
+worker/node_modules/
+.wrangler/

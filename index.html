@@ -653,6 +653,41 @@
     padding:1px 7px;
     border-radius:999px;
   }
+  /* 우체국 관리자 글쓰기 — 게시판 맨 아래의 작은 링크와 글쓰기 양식 */
+  .admin-link{
+    display:block;margin:12px auto 0;padding:4px 10px;
+    border:0;background:none;
+    font-family:inherit;font-size:12.5px;color:var(--ink-soft);
+    text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+  }
+  .admin-new{width:100%;margin:2px 0 10px;}
+  .notice-tools{display:flex;gap:6px;margin-top:8px;}
+  .notice-tools button{
+    padding:4px 12px;border:2px solid #DCE7E6;border-radius:999px;
+    background:#FFFFFF;color:var(--ink);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+  }
+  .notice-tools button[data-del]{color:#C0392B;}
+  .admin-form{display:grid;gap:10px;margin-top:6px;}
+  .admin-form label{display:grid;gap:4px;font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .admin-form input,.admin-form textarea{
+    width:100%;box-sizing:border-box;
+    padding:10px 12px;
+    border:2px solid #DCE7E6;border-radius:14px;
+    background:#FFFFFF;color:var(--ink);
+    font-family:inherit;font-size:16px;   /* 16px 미만이면 아이폰이 입력할 때 화면을 확대한다 */
+  }
+  .admin-form textarea{min-height:110px;resize:vertical;line-height:1.6;}
+  .admin-form input:focus,.admin-form textarea:focus{outline:3px solid var(--accent-coral);outline-offset:0;border-color:transparent;}
+  .admin-submit{
+    padding:12px;border:0;border-radius:18px;
+    background:var(--accent-coral-deep);color:#FFFFFF;
+    font-family:'Jua',sans-serif;font-size:15px;cursor:pointer;
+  }
+  .admin-submit:disabled{opacity:.6;cursor:wait;}
+  .admin-status{min-height:1.4em;margin:0;font-size:13.5px;font-weight:700;}
+  .admin-status.err{color:#C0392B;}
+  .admin-status.ok{color:var(--accent-green);}
+
   /* 폰에서는 지도만 좁아지고 마커는 CSS px로 고정이라 상대적으로 2배가 된다.
      지도 폭에 맞춰 마커를 줄이고, 바깥 여백을 지도 쪽으로 돌려준다. */
   @media (max-width:560px){
@@ -1360,19 +1395,16 @@
   ];
 
   // ───────────────────────────────────────────────────────────────
-  //  우체국 소식을 바꾸려면 여기만 고치면 됩니다.
-  //  구글 시트 주소창의 /d/ 와 /edit 사이에 있는 긴 문자열을 넣으세요.
-  //  비워두면 아래 기본 소식이 그대로 보입니다.  자세한 방법은 HOWTO-소식올리기.md
-  const NOTICE_SHEET_ID = '1DWioEIhgMf_p-tenAq5NAbNPI8tX2OAyZEhkrhugR-4';
-  const NOTICE_SHEET_NAME = '소식';
+  //  우체국 게시판 서버(Cloudflare Worker) 주소. 자세한 방법은 HOWTO-소식올리기.md
+  //  비워두거나 서버에 닿지 못하면 아래 기본 소식이 그대로 보인다.
+  //  관리자 아이디·비밀번호는 여기 적지 않는다 — 서버(Cloudflare 비밀값)에만 있다.
+  const NOTICE_API = 'https://ys-youthmap-notices.ys-youthmap.workers.dev';
   // ───────────────────────────────────────────────────────────────
 
-  // 시트를 못 읽을 때(주소가 비었거나·삭제됐거나·인터넷이 끊겼거나) 보여줄 기본 소식
+  // 서버에 닿지 못할 때 보여줄 기본 소식
   let NOTICES = [
     {date:'2026.11.01', title:'겨울방학 특별 프로그램 접수 시작', sample:true,
       body:'유성구청소년수련관에서 보드게임·댄스·밴드 등 겨울방학 프로그램 참가자를 모집해요.'},
-    {date:'2026.10.20', title:'아이누리카드 사용처가 늘어났어요', sample:true,
-      body:'이제 BC카드 가맹 음식점이면 어디서나 아이누리카드를 쓸 수 있어요. 대전 전체 음식점만 23,992곳!'},
     {date:'2026.10.05', title:'구즉청소년문화의집 VR체험실 새단장', sample:true,
       body:'VR체험실이 새로 꾸며져 다시 문을 열었어요. 지금 방문해보세요!'},
   ];
@@ -2251,21 +2283,163 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g,
     c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  // ── 우체국 게시판 ──────────────────────────────────────────────
+  // 관리자 확인과 저장은 서버(worker/src/index.js)가 한다. 로그인하면 아이디·비밀번호를
+  // 이 창의 메모리에만 들고 있다가(저장 안 함) 글쓰기·고치기·지우기 요청마다 같이 보낸다.
+  let adminAuth = '';                                   // 'Basic …' 헤더 값, 비어 있으면 로그아웃 상태
+  const basicAuth = (id, pw) => 'Basic ' + btoa(String.fromCharCode(...new TextEncoder().encode(id + ':' + pw)));
+
   function openPost(){
-    const items = NOTICES.length ? NOTICES.map(n=>`
+    const admin = !!adminAuth;
+    const items = NOTICES.length ? NOTICES.map((n, i)=>`
       <div class="notice">
         <div class="d">${esc(n.date)}${n.sample ? '<span class="sample-tag">예시 소식</span>' : ''}</div>
         <div class="t">${esc(n.title)}</div>
         <div class="b">${esc(n.body)}</div>
+        ${admin && !n.sample ? `<div class="notice-tools">
+          <button type="button" data-edit="${i}">고치기</button>
+          <button type="button" data-del="${i}">지우기</button></div>` : ''}
       </div>`).join('') : '<p>아직 도착한 소식이 없어요.</p>';
     modalInner.innerHTML = `
       <span class="modal-tag" style="background:var(--accent-coral-deep)">우체국 게시판</span>
       <h3>섬에 도착한 소식</h3>
+      ${admin ? '<button class="admin-submit admin-new" id="adminNew" type="button">＋ 새 소식 쓰기</button>' : ''}
       <div class="notice-list">${items}</div>
-      <button class="modal-close" id="closeBtn">닫기</button>`;
+      <p class="admin-status" id="adminStatus" role="status"></p>
+      <button class="modal-close" id="closeBtn">닫기</button>
+      ${NOTICE_API ? `<button class="admin-link" id="adminLink" type="button">${admin ? '관리자 로그아웃' : '관리자 로그인'}</button>` : ''}`;
     bindClose();
-    modal.showModal();
+    if(NOTICE_API){
+      document.getElementById('adminLink').addEventListener('click', ()=>{
+        if(adminAuth){ adminAuth = ''; openPost(); } else openLogin();
+      });
+    }
+    if(admin){
+      document.getElementById('adminNew').addEventListener('click', ()=>openEditor(null));
+      modalInner.querySelectorAll('[data-edit]').forEach(b =>
+        b.addEventListener('click', ()=>openEditor(NOTICES[Number(b.dataset.edit)])));
+      modalInner.querySelectorAll('[data-del]').forEach(b =>
+        b.addEventListener('click', ()=>deleteNotice(NOTICES[Number(b.dataset.del)])));
+    }
+    if(!modal.open) modal.showModal();
     markNoticesRead();
+  }
+
+  const ADMIN_ERRORS = {
+    password:'아이디나 비밀번호가 맞지 않아요.',
+    locked:'로그인을 여러 번 틀려서 10분 동안 잠겼어요. 잠시 후 다시 해 주세요.',
+    empty:'제목을 적어 주세요.',
+    'not-found':'이미 지워진 소식이에요. 게시판을 새로 불러왔어요.',
+    'not-configured':'서버에 관리자 아이디·비밀번호가 아직 설정되지 않았어요. 안내서(HOWTO)를 확인해 주세요.',
+  };
+  const adminError = code => ADMIN_ERRORS[code] || '잠시 후 다시 해 주세요.';
+
+  // 서버 요청 하나. 결과 JSON 을 돌려주고, 네트워크가 끊기면 {ok:false, error:'network'}.
+  async function noticeApi(method, path, body, auth = adminAuth){
+    try{
+      const res = await fetch(NOTICE_API.replace(/\/$/, '') + path, {
+        method,
+        headers:{...(auth ? {Authorization:auth} : {}), ...(body ? {'Content-Type':'application/json'} : {})},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      return await res.json();
+    }catch(e){
+      return {ok:false, error:'network'};
+    }
+  }
+
+  function openLogin(){
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:var(--accent-coral-deep)">우체국 관리자</span>
+      <h3>관리자 로그인</h3>
+      <form class="admin-form" id="loginForm" novalidate>
+        <label>아이디
+          <input type="text" id="adminId" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+        <label>비밀번호
+          <input type="password" id="adminPw" autocomplete="current-password" required></label>
+        <p class="admin-status" id="adminStatus" role="status"></p>
+        <button class="admin-submit" id="adminSubmit" type="submit">로그인</button>
+      </form>
+      <button class="modal-close" id="closeBtn">게시판으로 돌아가기</button>`;
+    document.getElementById('closeBtn').addEventListener('click', openPost);
+    document.getElementById('loginForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const id = document.getElementById('adminId').value.trim();
+      const pw = document.getElementById('adminPw').value;
+      const say = sayer();
+      if(!id || !pw){ say('아이디와 비밀번호를 적어 주세요.', 'err'); return; }
+      busy(true); say('확인하는 중이에요…');
+      const auth = basicAuth(id, pw);
+      const out = await noticeApi('POST', '/login', null, auth);
+      busy(false);
+      if(!out.ok){ say(out.error === 'network' ? '인터넷 연결을 확인하고 다시 해 주세요.' : adminError(out.error), 'err'); return; }
+      adminAuth = auth;
+      openPost();
+    });
+    if(!modal.open) modal.showModal();
+    document.getElementById('adminId').focus();
+  }
+
+  function openEditor(n){
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:var(--accent-coral-deep)">우체국 관리자</span>
+      <h3>${n ? '소식 고치기' : '새 소식 쓰기'}</h3>
+      <form class="admin-form" id="editForm" novalidate>
+        <label>제목 <small>(40자까지)</small>
+          <input type="text" id="adminTitle" maxlength="40" required value="${n ? esc(n.title) : ''}"></label>
+        <label>내용 <small>(400자까지)</small>
+          <textarea id="adminBody" maxlength="400">${n ? esc(n.body) : ''}</textarea></label>
+        <p class="admin-status" id="adminStatus" role="status"></p>
+        <button class="admin-submit" id="adminSubmit" type="submit">${n ? '고친 내용 저장' : '올리기'}</button>
+      </form>
+      <button class="modal-close" id="closeBtn">게시판으로 돌아가기</button>`;
+    document.getElementById('closeBtn').addEventListener('click', openPost);
+    document.getElementById('editForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const title = document.getElementById('adminTitle').value.trim();
+      const body = document.getElementById('adminBody').value.trim();
+      const say = sayer();
+      if(!title){ say(ADMIN_ERRORS.empty, 'err'); return; }
+      busy(true); say('저장하는 중이에요…');
+      const out = n ? await noticeApi('PUT', '/notices/' + encodeURIComponent(n.id), {title, body})
+                    : await noticeApi('POST', '/notices', {title, body});
+      busy(false);
+      if(!out.ok) return handleAdminFail(out, say);
+      useNotices(out);
+      openPost();
+    });
+    if(!modal.open) modal.showModal();
+    document.getElementById('adminTitle').focus();
+  }
+
+  async function deleteNotice(n){
+    if(!confirm(`"${n.title}" 소식을 지울까요? 되돌릴 수 없어요.`)) return;
+    const say = sayer();
+    say('지우는 중이에요…');
+    const out = await noticeApi('DELETE', '/notices/' + encodeURIComponent(n.id));
+    if(!out.ok) return handleAdminFail(out, say);
+    useNotices(out);
+    openPost();
+  }
+
+  // 비밀번호가 바뀌었거나 잠겼으면 로그아웃시키고, 이미 지워진 글이면 목록을 새로 받는다
+  async function handleAdminFail(out, say){
+    if(out.error === 'password' || out.error === 'locked'){
+      adminAuth = '';
+      say(adminError(out.error) + ' 다시 로그인해 주세요.', 'err');
+      return;
+    }
+    if(out.error === 'not-found'){ await loadNotices(); openPost(); sayer()(adminError(out.error), 'err'); return; }
+    say(out.error === 'network' ? '인터넷 연결을 확인하고 다시 해 주세요.' : adminError(out.error), 'err');
+  }
+
+  function sayer(){
+    const status = document.getElementById('adminStatus');
+    return (msg, kind) => { if(status){ status.textContent = msg; status.className = 'admin-status ' + (kind || ''); } };
+  }
+  function busy(on){
+    const btn = document.getElementById('adminSubmit');
+    if(btn) btn.disabled = on;
   }
 
   function bindClose(){
@@ -2479,49 +2653,22 @@
     refreshBadge();
   }
 
-  // 따옴표 안의 쉼표·줄바꿈까지 처리해야 해서 split(',')로는 부족하다
-  function parseCsv(text){
-    const rows=[]; let row=[], cell='', q=false;
-    for(let i=0;i<text.length;i++){
-      const c=text[i];
-      if(q){
-        if(c === '"'){ if(text[i+1] === '"'){ cell+='"'; i++; } else q=false; }
-        else cell+=c;
-      } else if(c === '"') q=true;
-      else if(c === ','){ row.push(cell); cell=''; }
-      else if(c === '\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
-      else if(c !== '\r') cell+=c;
-    }
-    if(cell.length || row.length){ row.push(cell); rows.push(row); }
-    return rows.filter(r => r.some(v => v.trim()));
+  // 서버에서 소식을 받아 온다. 서버 주소가 비었거나 닿지 못하면 기본 소식을 그대로 둔다 —
+  // 넘겨받는 사람이 고칠 수 없으니 게시판이 텅 비거나 깨지지 않게 하는 게 우선이다.
+  async function loadNotices(){
+    if(!NOTICE_API) return;
+    useNotices(await noticeApi('GET', '/notices', null, ''));
   }
-
-  async function loadNoticeSheet(){
-    if(!NOTICE_SHEET_ID) return;
-    try{
-      const url = `https://docs.google.com/spreadsheets/d/${NOTICE_SHEET_ID}/gviz/tq`
-        + `?tqx=out:csv&sheet=${encodeURIComponent(NOTICE_SHEET_NAME)}&t=${Date.now()}`;
-      const res = await fetch(url);
-      if(!res.ok) throw new Error(res.status);
-      const rows = parseCsv(await res.text());
-      if(rows.length < 2) return;                       // 머리글만 있으면 기본 소식 유지
-      const head = rows[0].map(h => h.trim());
-      const col = name => head.findIndex(h => h === name);
-      const [iD, iT, iB] = [col('날짜'), col('제목'), col('내용')];
-      if(iD < 0 || iT < 0 || iB < 0) return;            // 열 이름이 다르면 건드리지 않는다
-      const parsed = rows.slice(1)
-        .map(r => ({date:(r[iD]||'').trim(), title:(r[iT]||'').trim(), body:(r[iB]||'').trim()}))
-        .filter(n => n.title)
-        .map(n => ({...n, id:n.date + '|' + n.title}));
-      if(!parsed.length) return;
-      parsed.sort((a,b) => b.date.localeCompare(a.date));
-      NOTICES = parsed;
-      refreshBadge();
-    }catch(e){
-      // 시트를 못 읽으면 파일에 적힌 기본 소식이 그대로 쓰인다
-    }
+  // 서버 응답의 목록으로 게시판을 바꾼다. 쓰기·고치기·지우기 응답에도 저장 직후 목록이 실려 온다 —
+  // 서버 저장소(KV)는 새 내용이 퍼지는 데 1분쯤 걸려서, 바로 다시 읽으면 옛 목록이 올 수 있다.
+  function useNotices(out){
+    if(!out.ok || !Array.isArray(out.notices)) return;
+    NOTICES = out.notices
+      .filter(n => n && n.id && n.title)
+      .map(n => ({id:String(n.id), date:String(n.date || ''), title:String(n.title), body:String(n.body || '')}));
+    refreshBadge();
   }
 
   refreshBadge();
-  loadNoticeSheet();
+  loadNotices();
 </script>
