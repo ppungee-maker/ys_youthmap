@@ -258,7 +258,7 @@
   .chip[aria-pressed="true"] .cd{background:var(--c);}
   .chip:focus-visible{outline:3px solid var(--accent-coral);outline-offset:2px;}
 
-  .school-dot{
+  .place-dot{
     position:absolute;
     transform:translate(-50%,-50%);
     width:44px;height:44px;
@@ -266,7 +266,7 @@
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
-  .school-dot i{
+  .place-dot i{
     display:block;
     width:12px;height:12px;
     margin:16px;
@@ -274,15 +274,15 @@
     background:var(--c);
     box-shadow:0 0 0 2.5px #FFFFFF, 0 2px 3px rgba(54,64,45,.4);
   }
-  .school-dot:hover i{transform:scale(1.25);}
+  .place-dot:hover i{transform:scale(1.25);}
   /* 아동안전지킴이집: 학교 점과 같은 크기·선택·깜빡임 스타일을 쓰고, 모양만 둥근 네모로 구분한다 */
-  .school-dot.guard i{border-radius:3px;width:9px;height:9px;margin:17.5px;}
-  .school-dot:focus-visible{outline:3px solid var(--accent-coral);outline-offset:0;border-radius:50%;}
+  .place-dot.guard i{border-radius:3px;width:9px;height:9px;margin:17.5px;}
+  .place-dot:focus-visible{outline:3px solid var(--accent-coral);outline-offset:0;border-radius:50%;}
 
   .weather-card{
     position:absolute;
     left:14px;bottom:14px;
-    z-index:6;
+    z-index:9;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -397,11 +397,11 @@
   #pinLayer > *{left:0;top:0;}
 
   /* 눌렀을 때 커지는 느낌은 안쪽 그림에만 — 바깥 transform 은 위치 계산이 쓴다 */
-  .pin .pin-glyph,.chest-icon,.post-icon{transition:transform .12s ease;}
+  .pin .pin-glyph,.post-icon{transition:transform .12s ease;}
   .pin:hover .pin-glyph{transform:scale(1.06);}
-  .chest-btn:hover .chest-icon,.post-btn:hover .post-icon{transform:scale(1.08);}
+  .post-btn:hover .post-icon{transform:scale(1.08);}
 
-  .zoom-ctrl{position:absolute;right:14px;top:70px;z-index:6;display:flex;flex-direction:column;gap:6px;}
+  .zoom-ctrl{position:absolute;right:14px;top:70px;z-index:9;display:flex;flex-direction:column;gap:6px;}
   .zoom-ctrl button{
     width:40px;height:40px;
     border-radius:13px;
@@ -420,7 +420,7 @@
   .sign-layer{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:7;}
 
   /* transform 은 JS가 화면 좌표를 찍는 데 쓰므로 여기서 건드리지 않는다 */
-  .pin,.chest-btn,.post-btn{
+  .pin,.post-btn{
     position:absolute;
     border:none;
     background:none;
@@ -428,7 +428,7 @@
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
-  .pin:focus-visible,.chest-btn:focus-visible,.post-btn:focus-visible{
+  .pin:focus-visible,.post-btn:focus-visible{
     outline:3px solid var(--accent-coral);
     outline-offset:3px;
     border-radius:10px;
@@ -439,11 +439,11 @@
   /* 장소 카드가 떠 있는 동안 어떤 마커를 가리키는지 계속 보이게 둔다 */
   .pin.active{z-index:6;}
   .pin.active .pin-glyph{filter:drop-shadow(0 0 9px var(--accent-coral)) drop-shadow(0 3px 2px rgba(74,64,56,.3));}
-  .school-dot.active{z-index:6;}
-  .school-dot.active i{box-shadow:0 0 0 3px #FFFFFF, 0 0 0 6px var(--accent-coral), 0 2px 4px rgba(54,64,45,.4);}
+  .place-dot.active{z-index:6;}
+  .place-dot.active i{box-shadow:0 0 0 3px #FFFFFF, 0 0 0 6px var(--accent-coral), 0 2px 4px rgba(54,64,45,.4);}
 
-  .school-dot.flash{z-index:5;}
-  .school-dot.flash i{animation:dotFlash .8s ease-in-out 2;}
+  .place-dot.flash{z-index:5;}
+  .place-dot.flash i{animation:dotFlash .8s ease-in-out 2;}
   @keyframes dotFlash{
     0%,100%{transform:scale(1);box-shadow:0 0 0 2.5px #FFFFFF, 0 2px 3px rgba(54,64,45,.4);}
     50%{transform:scale(1.8);box-shadow:0 0 0 3px #FFFFFF, 0 0 12px var(--accent-coral);}
@@ -469,7 +469,7 @@
     box-shadow:0 6px 14px -6px rgba(74,64,56,.5);
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
-    z-index:6;
+    z-index:9;   /* 조작 버튼은 표지판(7)·내 위치(8)보다 위 */
   }
   .locate-btn:hover{background:var(--cream);}
   .locate-btn:focus-visible{outline:3px solid var(--accent-coral);outline-offset:2px;}
@@ -477,13 +477,48 @@
   .locate-btn.loading svg{animation:locateSpin .9s linear infinite;}
   @keyframes locateSpin{to{transform:rotate(360deg);}}
 
-  .chest-btn,.post-btn{transform:translate(-50%,-50%);}
-  .chest-icon,.post-icon{
+  /* 내 위치: 유성구 캐릭터 '유성이' 얼굴(매뉴얼북 BS09 '기본' 표정, 모양·색 그대로).
+     버튼 자체는 실제 위치를 가리키는 작은 점이고, 얼굴은 그 바로 위에 띄운다. */
+  .me-marker{
+    position:absolute;
+    width:18px;height:18px;
+    padding:0;border:0;background:none;
+    left:0;top:0;
+    cursor:pointer;
+    z-index:8;   /* 표지판 층(.sign-layer, 7)보다 위 — 표지판에 얼굴이 가리지 않게 */
+    -webkit-tap-highlight-color:transparent;
+  }
+  .me-dot{
+    position:absolute;inset:3px;
+    border-radius:50%;
+    background:var(--accent-coral-deep);
+    box-shadow:0 0 0 2.5px #FFFFFF, 0 2px 4px rgba(54,64,45,.45);
+  }
+  .me-pulse{
+    position:absolute;inset:0;
+    border-radius:50%;
+    background:var(--accent-coral);
+    animation:mePulse 1.8s ease-out infinite;
+  }
+  @keyframes mePulse{from{transform:scale(.6);opacity:.55;}to{transform:scale(2.6);opacity:0;}}
+  .me-face{
+    position:absolute;
+    left:50%;bottom:62%;
+    width:52px;height:auto;
+    transform:translateX(-50%);
+    filter:drop-shadow(0 0 1.5px #FFFFFF) drop-shadow(0 3px 3px rgba(54,64,45,.35));
+    pointer-events:none;
+  }
+  .me-marker:focus-visible{outline:3px solid var(--accent-coral);outline-offset:3px;border-radius:50%;}
+  @media (prefers-reduced-motion: reduce){ .me-pulse{animation:none;opacity:.25;} }
+
+  .post-btn{transform:translate(-50%,-50%);}
+  .post-icon{
     width:44px;height:44px;
     filter:drop-shadow(0 3px 2px rgba(74,64,56,.3));
   }
   .post-wrap{position:relative;display:inline-flex;}
-  .post-icon{width:48px;height:48px;}   /* 상자(44px)보다 10% 크게 — 외곽의 빈 땅에 혼자 있어서 여유가 있다 */
+  .post-icon{width:48px;height:48px;}   /* 기본(44px)보다 10% 크게 — 외곽의 빈 땅에 혼자 있어서 여유가 있다 */
   /* 우체국 간판. 아이콘 위에 띄워 두어(absolute) 마커의 기준점과 크기는 그대로 둔다.
      봉투 그림은 viewBox 44 중 y=13 에서 시작하므로, 간판 아랫변을 거기(위에서 29.5%)에
      맞추되 살짝 띄워, 간판이 봉투 윗변을 가리지 않게 한다. */
@@ -624,18 +659,19 @@
     .page{padding:18px 10px 40px;}
     .sheet{padding:14px 11px 18px;border-radius:24px;}
     .pin-glyph{width:34px;height:39px;}
-    .chest-icon,.post-icon{width:30px;height:30px;}
+    .post-icon{width:30px;height:30px;}
     .post-icon{width:33px;height:33px;}
     .post-sign{font-size:10px;padding:1px 6px 2px;border-radius:6px;}
     .post-wrap .badge{min-width:12px;height:12px;padding:0 3px;font-size:8.5px;box-shadow:0 0 0 1.5px #FFFFFF;}
     .badge{min-width:16px;height:16px;font-size:10px;top:-3px;right:-5px;box-shadow:0 0 0 2px var(--land);}
-    .school-dot{width:36px;height:36px;}
-    .school-dot i{width:11px;height:11px;margin:12.5px;}
-    .school-dot.guard i{width:8px;height:8px;margin:14px;}
+    .place-dot{width:36px;height:36px;}
+    .place-dot i{width:11px;height:11px;margin:12.5px;}
+    .place-dot.guard i{width:8px;height:8px;margin:14px;}
     .locate-btn{width:40px;height:40px;right:10px;top:10px;}
     .zoom-ctrl{right:10px;top:58px;}
     .zoom-ctrl button{width:36px;height:36px;border-radius:12px;font-size:17px;}
     .locate-btn svg{width:22px;height:22px;}
+    .me-face{width:42px;}
     .weather-card{left:10px;bottom:10px;padding:8px 10px 9px;border-radius:22px;}
     .weather-card svg{width:30px;height:24px;}
     .wx-temp{font-size:16px;}
@@ -730,10 +766,10 @@
 
   <div class="sheet">
     <div class="search-box">
-      <label class="sr-only" for="searchInput">시설이나 학교 이름으로 찾기</label>
+      <label class="sr-only" for="searchInput">장소 이름으로 찾기</label>
       <span class="search-icon" aria-hidden="true"></span>
       <input id="searchInput" type="search" autocomplete="off" enterkeyhint="search"
-             placeholder="시설·학교 이름을 찾아보세요"
+             placeholder="장소 이름을 찾아보세요"
              role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list">
       <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>&times;</button>
       <ul class="search-results" id="searchResults" role="listbox" hidden></ul>
@@ -1036,18 +1072,20 @@
   </div>
 
   <footer class="notes">
-    <p>시설 11곳과 학교 69곳은 실제 위경도를 섬 윤곽에 맞춰 찍은 자리예요 — 서로 겹치는 곳끼리는 조금씩 떨어뜨려 놔서 평균 100m쯤 밀려 있어요.</p>
-    <p>아이누리카드(급식카드)는 2025년부터 BC카드 가맹 일반음식점 전체(대전 23,992곳)로 사용처가 넓어졌어요 — 예전처럼 정해진 가맹점만 찾아다닐 필요 없이, 편의점은 물론 왠만한 식당에서도 바로 쓸 수 있어요.
-    더 궁금하면 <a href="http://dreamtree.shinhancard.com/waf/opendatam" target="_blank" rel="noopener">아이누리카드 가맹점 조회</a>에서, 또는 근처 CU·GS25·세븐일레븐에서 바로 물어보세요.</p>
+    <p>모든 점은 실제 위경도를 섬 윤곽에 맞춰 찍은 자리예요. 동네까지는 맞지만 골목 단위로는 조금 어긋날 수 있으니, 찾아갈 때는 길찾기 버튼으로 지도앱을 열어 주세요.</p>
+    <p>도서관·박물관·돌봄시설의 여는 시간은 바뀔 수 있어요. 가기 전에 전화로 한 번 확인해요.</p>
     <ul class="sources">
       <li><h2 class="sources-title">정보 출처</h2></li>
       <li><b>행정동 경계</b>통계청 행정동 경계</li>
-      <li><b>도로·하천·학교·섬 바깥 지도</b>OpenStreetMap (©&nbsp;OpenStreetMap 기여자)</li>
+      <li><b>도로·하천·섬 바깥 지도, 공원 위치, 소방서</b>OpenStreetMap (©&nbsp;OpenStreetMap 기여자)</li>
       <li><b>청소년 시설</b>도로명주소로 확인 (2026년 10월 기준), 위치는 Nominatim(OpenStreetMap)으로 변환</li>
+      <li><b>공원·도서관·과학관·박물관·돌봄시설 목록</b>유성구 지도 기초자료 (도시공원 결정 내역, 기관 목록 · 2026년 11월 정리), 위치는 OpenStreetMap 주소로 변환</li>
+      <li><b>지역아동센터</b>공공데이터포털 「대전광역시_지역아동센터 현황」 (2023년 3월 기준)과 함께 확인</li>
+      <li><b>경찰서·지구대·치안센터</b>공공데이터포털 「대전광역시 유성구_경찰서 현황」 (2021년 5월 기준)</li>
       <li><b>날씨·미세먼지</b>Open-Meteo (일부 기기에서는 기온만 wttr.in)</li>
       <li><b>아동안전지킴이집</b>경찰청 안전Dream 안전지도 Open API (2026년 11월 기준) — 자료 출처: 경찰청</li>
-      <li><b>급식카드 가맹점</b><a href="http://dreamtree.shinhancard.com/waf/opendatam" target="_blank" rel="noopener">신한카드 아이누리카드 가맹점 조회</a></li>
       <li><b>우체국 소식</b>운영자가 직접 올린 소식</li>
+      <li><b>내 위치 캐릭터</b>유성구 캐릭터 ‘유성이’ (「유성이 매뉴얼북」 2026, 대전광역시 유성구)</li>
     </ul>
   </footer>
 </div>
@@ -1068,115 +1106,187 @@
 
 <script>
   const FACILITIES = [
-    {id:'f1', num:1, name:'엑스포과학공원·한빛탑', cat:'행사거점', dong:'도룡동(신성동)', region:4,
-      left:71.98, top:52.33, lat:36.3744134, lng:127.3870881, desc:'한빛탑 아래 광장에서 청소년 대상 과학·문화 행사가 자주 열려요.'},
-    {id:'f2', num:2, name:'구즉청소년문화의집', cat:'문화의집', dong:'봉산동(구즉동)', region:5,
+    {id:'f2', num:1, name:'구즉청소년문화의집', cat:'문화의집', dong:'봉산동(구즉동)', region:5,
       left:70.7, top:31.66, lat:36.4446094, lng:127.3839063, desc:'VR체험실, 댄스연습실, 미디어실을 갖춘 테크노밸리의 청소년 아지트예요.'},
-    {id:'f3', num:3, name:'다함께돌봄센터 유성아이 1호점', cat:'돌봄시설', dong:'하기동(노은2동)', region:3,
-      left:46.13, top:47.94, lat:36.3893275, lng:127.3229048, desc:'송림마을3단지 안에 있는 방과 후 동네 돌봄 공간이에요.'},
-    {id:'f4', num:4, name:'국립중앙과학관', cat:'과학관', dong:'구성동(온천2동)', region:2,
-      left:67.33, top:52.09, lat:36.3752581, lng:127.3755339, desc:'청소년 과학축제와 체험전이 자주 열리는 과학의 전당이에요.'},
-    {id:'f5', num:5, name:'유성구청소년수련관', cat:'수련관', dong:'죽동(온천2동)', region:2,
+    {id:'f5', num:2, name:'유성구청소년수련관', cat:'수련관', dong:'죽동(온천2동)', region:2,
       left:46.49, top:49.64, lat:36.3806509, lng:127.3238100, desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
-    {id:'f6', num:6, name:'유성구청소년상담복지센터', cat:'상담복지', dong:'죽동(온천2동)', region:2,
+    {id:'f6', num:3, name:'유성구청소년상담복지센터', cat:'상담복지', dong:'죽동(온천2동)', region:2,
       left:42.14, top:52.13, lat:36.3804952, lng:127.3236602, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
-    {id:'f7', num:7, name:'유성구미래교육지원센터', cat:'진로체험', dong:'죽동(온천2동)', region:2,
+    {id:'f7', num:4, name:'유성구미래교육지원센터', cat:'진로체험', dong:'죽동(온천2동)', region:2,
       left:50.84, top:52.11, lat:36.3806000, lng:127.3237300, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
-    {id:'f8', num:8, name:'학교밖청소년지원센터 꿈드림', cat:'학교밖지원', dong:'어은동(온천2동)', region:2,
-      left:59.08, top:55.93, lat:36.3622077, lng:127.3550488, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
-    {id:'f9', num:9, name:'장대청소년문화의집', cat:'문화의집', dong:'장대동(온천2동)', region:2,
+    {id:'f8', num:5, name:'학교밖청소년지원센터 꿈드림', cat:'학교밖지원', dong:'장대동(온천2동)', region:2,
+      left:57.4, top:55.6, lat:36.3631103, lng:127.3377119, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
+    {id:'f9', num:6, name:'장대청소년문화의집', cat:'문화의집', dong:'장대동(온천2동)', region:2,
       left:51.68, top:57.21, lat:36.3578825, lng:127.3366933, desc:'동아리 활동과 문화 프로그램이 가득한 작은 아지트예요.'},
-    {id:'f10', num:10, name:'다함께돌봄센터 유성아이 2호점', cat:'돌봄시설', dong:'계산동(학하동)', region:1,
-      left:37.97, top:62.49, lat:36.3399435, lng:127.3026514, desc:'오투그란데미학 단지 안, 학하동 아이들의 방과 후 쉼터예요.'},
-    {id:'f11', num:11, name:'다함께돌봄센터 유성아이 11호점', cat:'돌봄시설', dong:'원신흥동', region:1,
-      left:52.1, top:62.97, lat:36.3383013, lng:127.3377191, desc:'갑천2 트리풀시티 단지 안에 2026년 새로 문을 연 돌봄 공간이에요.'},
   ];
 
-  const CHESTS = [
-    {id:'c1', region:1, label:'도안 해안마을', left:35.79, top:70.21},
-    {id:'c2', region:2, label:'온천 항구마을', left:50.0, top:65.55},
-    {id:'c3', region:3, label:'노은 신시가지', left:41.64, top:43.77},
-    {id:'c4', region:4, label:'대덕 연구소숲', left:56.69, top:37.55},
-    {id:'c5', region:5, label:'테크노밸리 등대', left:76.75, top:34.44},
-  ];
-
-  // 학교 좌표는 OSM 실측 위경도를 섬 외곽선(실제 행정동 경계 기준)에 맞춰 변환한 값이다.
-  // 겹침 해소로 평균 40m, 최대 143m 밀려 있다.
-  const SCHOOLS = [
-    {lv:'초', name:'계산초등학교', left:35.98, top:61.69, lat:36.34388, lng:127.299321},
-    {lv:'초', name:'교촌초등학교', left:43.71, top:72.53, lat:36.305881, lng:127.316892},
-    {lv:'초', name:'구즉초등학교', left:70.22, top:32.82, lat:36.440641, lng:127.382707},
-    {lv:'초', name:'금성초등학교', left:57.08, top:48.03, lat:36.389048, lng:127.350084},
-    {lv:'초', name:'대덕초등학교', left:69.71, top:49.34, lat:36.385176, lng:127.381385},
-    {lv:'초', name:'대전지족초등학교', left:44.3, top:51.3, lat:36.380627, lng:127.317255},
-    {lv:'초', name:'대전관평초등학교', left:72.09, top:38.0, lat:36.423952, lng:127.387228},
-    {lv:'초', name:'대전노은초등학교', left:45.71, top:54.11, lat:36.369018, lng:127.321362},
-    {lv:'초', name:'대전두리초등학교', left:70.68, top:36.28, lat:36.428843, lng:127.382362},
-    {lv:'초', name:'대전문지초등학교', left:77.03, top:46.35, lat:36.395842, lng:127.39955},
-    {lv:'초', name:'대전반석초등학교', left:42.54, top:47.64, lat:36.389979, lng:127.313146},
-    {lv:'초', name:'대전배울초등학교', left:70.64, top:38.42, lat:36.422007, lng:127.3845},
-    {lv:'초', name:'대전복용초등학교', left:48.05, top:63.98, lat:36.334872, lng:127.327692},
-    {lv:'초', name:'대전봉명초등학교', left:53.9, top:59.69, lat:36.349469, lng:127.343587},
-    {lv:'초', name:'대전상원초등학교', left:49.96, top:62.06, lat:36.342233, lng:127.333723},
-    {lv:'초', name:'대전새미래초등학교', left:37.76, top:50.89, lat:36.379293, lng:127.303197},
-    {lv:'초', name:'대전송강초등학교', left:70.79, top:34.79, lat:36.433972, lng:127.384127},
-    {lv:'초', name:'대전송림초등학교', left:50.02, top:48.13, lat:36.388697, lng:127.332562},
-    {lv:'초', name:'대전어은초등학교', left:58.72, top:55.62, lat:36.364774, lng:127.353626},
-    {lv:'초', name:'대전용산초등학교', left:75.0, top:39.2, lat:36.419836, lng:127.395305},
-    {lv:'초', name:'대전자운초등학교', left:52.35, top:40.95, lat:36.412018, lng:127.33835},
-    {lv:'초', name:'대전전민초등학교', left:80.1, top:45.3, lat:36.398473, lng:127.407148},
-    {lv:'초', name:'대전죽동초등학교', left:51.2, top:53.52, lat:36.370386, lng:127.335505},
-    {lv:'초', name:'대전하기초등학교', left:43.92, top:48.24, lat:36.388679, lng:127.32166},
-    {lv:'초', name:'대정초등학교', left:46.31, top:69.8, lat:36.31515, lng:127.323367},
-    {lv:'초', name:'봉암초등학교', left:55.71, top:55.55, lat:36.363978, lng:127.347879},
-    {lv:'초', name:'상대초등학교', left:52.16, top:59.46, lat:36.34766, lng:127.336421},
-    {lv:'초', name:'상지초등학교', left:45.8, top:52.16, lat:36.375399, lng:127.321945},
-    {lv:'초', name:'수정초등학교', left:42.33, top:54.84, lat:36.365913, lng:127.313475},
-    {lv:'초', name:'외삼초등학교', left:41.11, top:47.19, lat:36.392704, lng:127.31063},
-    {lv:'초', name:'원신흥초등학교', left:54.03, top:62.23, lat:36.340823, lng:127.342525},
-    {lv:'초', name:'유성초등학교', left:49.73, top:56.44, lat:36.362032, lng:127.333788},
-    {lv:'초', name:'장대초등학교', left:53.93, top:56.24, lat:36.361553, lng:127.339367},
-    {lv:'초', name:'학하초등학교', left:41.72, top:64.18, lat:36.334209, lng:127.311952},
-    {lv:'초', name:'흥도초등학교', left:52.47, top:64.26, lat:36.334015, lng:127.338601},
-    {lv:'중', name:'대덕중학교', left:68.74, top:51.56, lat:36.378792, lng:127.377731},
-    {lv:'중', name:'대전관평중학교', left:72.54, top:37.08, lat:36.424997, lng:127.387862},
-    {lv:'중', name:'대전노은중학교', left:47.07, top:53.58, lat:36.369788, lng:127.324178},
-    {lv:'중', name:'대전두리중학교', left:69.02, top:36.33, lat:36.428797, lng:127.381221},
-    {lv:'중', name:'대전문지중학교', left:77.66, top:45.23, lat:36.396975, lng:127.399482},
-    {lv:'중', name:'대전봉명중학교', left:55.55, top:59.68, lat:36.349479, lng:127.344909},
-    {lv:'중', name:'대전새미래중학교', left:39.4, top:50.93, lat:36.379233, lng:127.305135},
-    {lv:'중', name:'대전송강중학교', left:69.92, top:33.83, lat:36.437254, lng:127.381959},
-    {lv:'중', name:'대전외삼중학교', left:40.89, top:46.25, lat:36.393879, lng:127.310259},
-    {lv:'중', name:'대전자운중학교', left:52.35, top:41.92, lat:36.410798, lng:127.338354},
-    {lv:'중', name:'대전장대중학교', left:52.34, top:56.86, lat:36.360482, lng:127.338746},
-    {lv:'중', name:'대전전민중학교', left:79.48, top:44.42, lat:36.401118, lng:127.405791},
-    {lv:'중', name:'대전하기중학교', left:45.91, top:49.3, lat:36.385685, lng:127.322353},
-    {lv:'중', name:'덕명중학교', left:37.91, top:62.23, lat:36.345761, lng:127.302642},
-    {lv:'중', name:'성덕중학교', left:55.0, top:48.8, lat:36.386435, lng:127.344922},
-    {lv:'중', name:'어은중학교', left:57.2, top:55.18, lat:36.365724, lng:127.353053},
-    {lv:'중', name:'원신흥중학교', left:55.16, top:64.51, lat:36.333095, lng:127.345314},
-    {lv:'중', name:'유성중학교', left:49.27, top:61.18, lat:36.345808, lng:127.334807},
-    {lv:'중', name:'지족중학교', left:45.91, top:51.19, lat:36.377807, lng:127.320655},
-    {lv:'고', name:'대덕고등학교', left:69.57, top:48.38, lat:36.387256, lng:127.381176},
-    {lv:'고', name:'대덕소프트웨어마이스터고등학교', left:62.3, top:47.3, lat:36.391505, lng:127.363069},
-    {lv:'고', name:'대전예술고등학교', left:49.73, top:60.26, lat:36.346351, lng:127.333045},
-    {lv:'고', name:'대전과학고등학교', left:65.49, top:52.48, lat:36.373915, lng:127.37097},
-    {lv:'고', name:'대전노은고등학교', left:44.15, top:53.87, lat:36.369031, lng:127.319568},
-    {lv:'고', name:'대전반석고등학교', left:41.8, top:48.49, lat:36.386691, lng:127.313566},
-    {lv:'고', name:'대전용산고등학교', left:75.96, top:38.41, lat:36.420881, lng:127.396236},
-    {lv:'고', name:'대전전민고등학교', left:76.09, top:45.55, lat:36.39796, lng:127.399088},
-    {lv:'고', name:'대전지족고등학교', left:42.7, top:51.47, lat:36.37791, lng:127.315698},
-    {lv:'고', name:'대전체육중고등학교', left:53.93, top:63.65, lat:36.336023, lng:127.342267},
-    {lv:'고', name:'도안고등학교', left:51.95, top:63.36, lat:36.336907, lng:127.33738},
-    {lv:'고', name:'유성고등학교', left:50.54, top:59.43, lat:36.349714, lng:127.335377},
-    {lv:'고', name:'유성생명과학고등학교', left:48.14, top:60.42, lat:36.346988, lng:127.328046},
-    {lv:'고', name:'유성여자고등학교', left:46.88, top:50.07, lat:36.383368, lng:127.32817},
-    {lv:'고', name:'중일고등학교', left:72.93, top:38.82, lat:36.420299, lng:127.389433},
+  // 공원·도서관·공공시설·돌봄시설. 출처와 좌표 잡는 법은 CLAUDE.md 'PLACES' 항목 참고.
+  // k = 칩(레이어) id, sub = 상세 창 꼬리표. 위경도는 시설과 같은 투영식으로 left/top 으로 바꿨다.
+  const PLACES = [
+    {k:"library",sub:"도서관",name:"노은도서관",addr:"유성구 노은동로234번길 34(지족동)",tel:"042-611-6610",hours:"화~금 09:00~22:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.381533,lng:127.320628,left:45.07,top:50.33},
+    {k:"library",sub:"도서관",name:"유성도서관",addr:"유성구 대덕대로 507-38(가정동)",tel:"042-611-6530",hours:"화~금 09:00~22:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.378443,lng:127.375985,left:67.49,top:51.24},
+    {k:"library",sub:"도서관",name:"진잠도서관",addr:"유성구 진잠로160번길 19(원내동)",tel:"042-611-6590",hours:"화~금 09:00~22:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.3032,lng:127.319734,left:44.71,top:73.46},
+    {k:"library",sub:"도서관",name:"구즉도서관",addr:"유성구 와룡로37번길 20(송강동)",tel:"042-611-6510",hours:"화~금 09:00~22:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.429526,lng:127.380466,left:69.3,top:36.15},
+    {k:"library",sub:"도서관",name:"구암도서관",addr:"유성구 유성대로626번길 57(구암동)",tel:"042-611-6630",hours:"화~금 09:00~21:00 / 토·월 09:00~18:00 / 매주 일요일·법정공휴일 휴관",lat:36.349312,lng:127.330274,left:48.98,top:59.84},
+    {k:"library",sub:"도서관",name:"원신흥도서관",addr:"유성구 원신흥남로 59(원신흥동)",tel:"042-611-6970",hours:"화~금 09:00~22:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.337469,lng:127.338149,left:52.17,top:63.34},
+    {k:"library",sub:"도서관",name:"관평도서관",addr:"유성구 테크노4로 131(관평동)",tel:"042-716-0350",hours:"화~금 09:00~22:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.423186,lng:127.388393,left:72.51,top:38.02},
+    {k:"library",sub:"도서관",name:"아가랑도서관",addr:"유성구 반석로 78(반석동)",tel:"042-611-6526",hours:"월~토 09:00~18:00 / 매주 일요일·법정공휴일 휴관",lat:36.39074,lng:127.306251,left:39.25,top:47.61},
+    {k:"library",sub:"도서관",name:"전민도서관",addr:"유성구 문지로299번길 18(문지동)",tel:"042-389-0350",hours:"화~금 09:00~21:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.393844,lng:127.405993,left:79.64,top:46.69},
+    {k:"library",sub:"도서관",name:"용산도서관",addr:"유성구 배울1로 118(용산동)",tel:"042-611-6793",hours:"화~금 09:00~21:00 / 토·일 09:00~18:00 / 매주 월요일·법정공휴일 휴관",lat:36.416926,lng:127.392523,left:74.18,top:39.87},
+    {k:"library",sub:"도서관",name:"엑스포분관",addr:"유성구 엑스포로 448(전민동)",tel:"042-611-6583",hours:"화~토 09:00~18:00 / 매주 일요일·월요일·법정공휴일 휴관",lat:36.399013,lng:127.408138,left:80.51,top:45.16},
+    {k:"public",sub:"과학관·박물관",name:"국립중앙과학관",addr:"유성구 대덕대로 481",tel:"042-601-7979",hours:"화~일 09:30~17:30 / 매주 월요일 휴관",desc:"청소년 과학축제와 체험전이 자주 열리는 과학의 전당이에요.",lat:36.376271,lng:127.375281,left:67.2,top:51.88},
+    {k:"public",sub:"과학관·박물관",name:"대전시민천문대",addr:"유성구 과학로 213-48(신성동)",tel:"042-863-8763",hours:"화~일 14:00~22:00 / 매주 월요일 휴관 / 공휴일은 운영하고 다음 날 휴관",lat:36.381632,lng:127.353806,left:58.51,top:50.3},
+    {k:"public",sub:"과학관·박물관",name:"한국지질자원연구원 지질박물관",addr:"유성구 과학로 124",tel:"042-868-3798",hours:"화~일 10:00~17:00 / 매주 월요일 휴관 / 방문 전 개관여부 문의 필수",lat:36.377581,lng:127.362247,left:61.92,top:51.49},
+    {k:"public",sub:"과학관·박물관",name:"한국조폐공사 화폐박물관",addr:"유성구 과학로 80-67(가정동)",tel:"042-870-1400",hours:"화~일 10:00~17:00 / 매주 월요일, 1월 1일, 명절 연휴, 임시공휴일 휴관",lat:36.377518,lng:127.370555,left:65.29,top:51.51},
+    {k:"public",sub:"과학관·박물관",name:"대전시립박물관",addr:"유성구 도안대로 398",tel:"042-270-8600",hours:"화~일 10:00~18:00 / 매주 월요일 휴관",lat:36.335983,lng:127.334729,left:50.78,top:63.78},
+    {k:"public",sub:"과학관·박물관",name:"대전선사박물관",addr:"유성구 노은동로 126",tel:"042-270-8640",hours:"화~일 10:00~18:00 / 매주 월요일, 1월 1일, 명절 당일 휴관",lat:36.371844,lng:127.323838,left:46.37,top:53.19},
+    {k:"public",sub:"과학관·박물관",name:"충남대학교 박물관",addr:"유성구 대학로 99",tel:"042-821-6042",hours:"월~금 10:00~17:00 / 토·일·공휴일, 5월 25일 휴관",lat:36.362615,lng:127.343686,left:54.41,top:55.91},
+    {k:"public",sub:"과학관·박물관",name:"엑스포과학공원 한빛탑",addr:"유성구 대덕대로 480",tel:"042-250-1111",desc:"한빛탑 아래 광장에서 청소년 대상 과학·문화 행사가 자주 열려요.",lat:36.374334,lng:127.387221,left:72.04,top:52.45},
+    {k:"public",sub:"경찰",name:"유성지구대",addr:"유성구 문화원로 136(봉명동)",tel:"042-823-0112",lat:36.358153,lng:127.350738,left:57.27,top:57.23},
+    {k:"public",sub:"경찰",name:"도룡지구대",addr:"유성구 가정로 318(도룡동)",tel:"042-600-5305",lat:36.385443,lng:127.378098,left:68.34,top:49.17},
+    {k:"public",sub:"경찰",name:"어은치안센터",addr:"유성구 농대로 20(어은동)",tel:"042-725-6312",lat:36.36224,lng:127.353323,left:58.31,top:56.02},
+    {k:"public",sub:"경찰",name:"전민치안센터",addr:"유성구 엑스포로466번길 55(전민동)",tel:"042-725-6512",lat:36.399141,lng:127.406138,left:79.7,top:45.12},
+    {k:"public",sub:"경찰",name:"노은지구대",addr:"유성구 은구비로 72(지족동)",tel:"042-600-5706",lat:36.375853,lng:127.323131,left:46.09,top:52.0},
+    {k:"public",sub:"경찰",name:"구즉파출소",addr:"유성구 구룡달전로 21(봉산동)",tel:"042-935-4112",lat:36.44006,lng:127.383574,left:70.56,top:33.04},
+    {k:"public",sub:"경찰",name:"진잠파출소",addr:"유성구 원내로 3(원내동)",tel:"042-543-0112",lat:36.299559,lng:127.316119,left:43.25,top:74.54},
+    {k:"public",sub:"경찰",name:"복용파출소",addr:"유성구 복용북로75번길 19(복용동)",tel:"042-725-6309",lat:36.343206,lng:127.31605,left:43.22,top:61.65},
+    {k:"public",sub:"경찰",name:"신성지구대",addr:"유성구 신성로 71(신성동)",tel:"042-725-6015",lat:36.389837,lng:127.34848,left:56.35,top:47.87},
+    {k:"public",sub:"경찰",name:"대전유성경찰서",addr:"유성구 북유성대로 112(죽동)",tel:"042-725-6224(민원실)",lat:36.379299,lng:127.325408,left:47.01,top:50.98},
+    {k:"public",sub:"소방",name:"전민119안전센터",lat:36.399334,lng:127.405956,left:79.62,top:45.07},
+    {k:"public",sub:"소방",name:"대전유성소방서",lat:36.37908,lng:127.379171,left:68.78,top:51.05},
+    {k:"public",sub:"소방",name:"노은119안전센터",lat:36.368705,lng:127.31742,left:43.77,top:54.11},
+    {k:"public",sub:"소방",name:"궁동119안전센터",lat:36.363714,lng:127.348783,left:56.47,top:55.59},
+    {k:"public",sub:"소방",name:"서부소방서 원내119안전센터",lat:36.291948,lng:127.318879,left:44.37,top:76.79},
+    {k:"care",sub:"가족센터",name:"대전광역시 가족센터",addr:"유성구 테크노6로 40-17, 근로자종합복지회관",tel:"042-252-9989",hours:"월, 수 09:00~21:00 / 화, 목, 금 09:00~18:00 / 주말·공휴일 휴무",lat:36.426536,lng:127.394422,left:74.95,top:37.03},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 1호점",addr:"유성구 노은로 353, 주민공동시설 2층(하기동, 송림마을3단지)",tel:"042-825-6500",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",desc:"송림마을3단지 안에 있는 방과 후 동네 돌봄 공간이에요.",lat:36.390331,lng:127.323026,left:46.04,top:47.73},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 2호점",addr:"유성구 학하남로 10, 주민공동시설 1층(계산동, 오투그란데미학)",tel:"042-824-6500",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",desc:"오투그란데미학 단지 안, 학하동 아이들의 방과 후 쉼터예요.",lat:36.34304,lng:127.301659,left:37.39,top:61.69},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 3호점",addr:"유성구 관들3길 77-13, 1층(관평동)",tel:"042-934-0191",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.42338,lng:127.391185,left:73.64,top:37.96},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 4호점",addr:"유성구 지족로 92, 상가동 2층(지족동, 영무예다음)",tel:"042-710-0741",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.374387,lng:127.306857,left:39.5,top:52.44},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 5호점",addr:"유성구 죽동로 321, 주민공동시설 1층(죽동, 금성백조예미지)",tel:"042-825-1277",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.372587,lng:127.338185,left:52.18,top:52.97},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 6호점",addr:"유성구 상대복용로29번길 52, 주민공동시설 1층(상대동, 아이파크시티1단지)",tel:"042-822-3379",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.337161,lng:127.330514,left:49.08,top:63.43},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 7호점",addr:"유성구 엑스포로 448, 주민공동시설 2층(전민동, 엑스포아파트)",tel:"042-864-3006",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.399013,lng:127.408138,left:80.51,top:45.16},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 8호점",addr:"유성구 반석로 80, 주민공동시설 1층(반석동, 반석더샵)",tel:"042-825-5880",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.392065,lng:127.304997,left:38.74,top:47.21},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 9호점",addr:"유성구 과학성장로 80, 주민공동시설 1층(둔곡동, 우미린사이언스포레)",tel:"042-933-8881",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.454673,lng:127.365484,left:63.24,top:28.72},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 10호점",addr:"유성구 도안동로 422, 주민공동시설 1층(원신흥동, 갑천1 트리풀시티힐스테이트)",tel:"042-826-0124",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.337397,lng:127.349583,left:56.8,top:63.36},
+    {k:"care",sub:"다함께돌봄센터",name:"다함께돌봄센터 유성아이 11호점",addr:"유성구 원신흥로 122-12(원신흥동, 갑천2 트리풀시티엘리프)",tel:"042-825-7982",hours:"학기중 10:00~19:00 / 방학중 09:00~18:00 (월~금, 공휴일 휴무)",lat:36.339576,lng:127.348547,left:56.38,top:62.72},
+    {k:"care",sub:"지역아동센터",name:"1318해피존그루터기지역아동센터",addr:"유성구 월드컵대로300번길 7-16",tel:"042-826-1813",hours:"학기중 10:00~21:00 / 방학중 10:00~19:00 (평일)",lat:36.348025,lng:127.332896,left:50.04,top:60.22},
+    {k:"care",sub:"지역아동센터",name:"구암지역아동센터",addr:"유성구 월드컵대로300번길 12, 1층",tel:"042-824-7252",hours:"학기중 10:00~19:00 / 방학중 10:30~18:30 (평일)",lat:36.347949,lng:127.333423,left:50.25,top:60.24},
+    {k:"care",sub:"지역아동센터",name:"금성지역아동센터",addr:"유성구 신성남로 29",tel:"042-862-3780",hours:"학기중 09:00~19:00 / 방학중 09:00~19:00 (평일)",lat:36.386517,lng:127.348485,left:56.35,top:48.85},
+    {k:"care",sub:"지역아동센터",name:"꿈터지역아동센터",addr:"유성구 학하서로35번길 32, 1층 101호",tel:"070-8866-7030",lat:36.34241,lng:127.30177,left:37.44,top:61.88},
+    {k:"care",sub:"지역아동센터",name:"노은지역아동센터",addr:"유성구 노은서로 77, 1층",tel:"042-476-1009",hours:"학기중 10:00~20:00 / 방학중 10:00~20:00 (평일)",lat:36.368528,lng:127.313691,left:42.26,top:54.17},
+    {k:"care",sub:"지역아동센터",name:"봉명꿈지역아동센터",addr:"유성구 유성대로654번길 195, 3층",tel:"042-822-6243",hours:"학기중 10:00~19:00 / 방학중 10:00~19:00 (평일)",lat:36.351757,lng:127.331648,left:49.54,top:59.12},
+    {k:"care",sub:"지역아동센터",name:"새중앙지역아동센터",addr:"유성구 유성대로729번길 49-10(장대동)",tel:"042-823-1408",lat:36.359545,lng:127.33193,left:49.65,top:56.82},
+    {k:"care",sub:"지역아동센터",name:"샬롬지역아동센터",addr:"유성구 노은서로 231(지족동, 샬롬교회)",tel:"042-477-8191",hours:"학기중 10:00~19:00 / 방학중 10:00~19:00 (평일)",lat:36.38,lng:127.31625,left:43.3,top:50.78},
+    {k:"care",sub:"지역아동센터",name:"송강지역아동센터",addr:"유성구 봉산로 17",tel:"042-936-3661",hours:"학기중 10:00~22:00 / 방학중 10:00~22:00 (평일) / 토 10:00~19:00",lat:36.436315,lng:127.386359,left:71.69,top:34.14},
+    {k:"care",sub:"지역아동센터",name:"송강테크노지역아동센터",addr:"유성구 송강로42번길 61, 청솔아파트 205동 107호",tel:"042-348-0110",hours:"학기중 09:00~19:00 / 방학중 09:00~19:00 (평일)",lat:36.437256,lng:127.383677,left:70.6,top:33.87},
+    {k:"care",sub:"지역아동센터",name:"원내지역아동센터",addr:"유성구 진잠로62번길 49, 2층",tel:"042-545-0691",hours:"학기중 10:00~20:00 / 방학중 10:00~19:00 (평일)",lat:36.297572,lng:127.318371,left:44.16,top:75.12},
+    {k:"care",sub:"지역아동센터",name:"유성지역아동센터",addr:"유성구 계룡로60번길 86, 우성햇살아파트 102호",tel:"042-826-1152",hours:"학기중 10:30~19:30 / 방학중 10:30~19:30 (평일)",lat:36.352791,lng:127.336794,left:51.62,top:58.81},
+    {k:"care",sub:"지역아동센터",name:"장대지역아동센터",addr:"유성구 유성대로 798-1, 401호",tel:"042-825-4850",lat:36.36311,lng:127.337712,left:51.99,top:55.77},
+    {k:"care",sub:"지역아동센터",name:"중앙지역아동센터",addr:"유성구 신성로 72, 2층",tel:"042-862-0857",hours:"학기중 09:30~19:00 / 방학중 09:30~19:00 (평일)",lat:36.389813,lng:127.348867,left:56.51,top:47.88},
+    {k:"care",sub:"지역아동센터",name:"진잠지역아동센터",addr:"유성구 진잠로92번길 24, 1층",tel:"042-581-7785",hours:"학기중 10:00~20:00 / 방학중 09:30~19:30 (평일)",lat:36.300281,lng:127.318202,left:44.09,top:74.32},
+    {k:"care",sub:"지역아동센터",name:"참사랑지역아동센터",addr:"유성구 원내로 16-1",tel:"042-545-6288",lat:36.299841,lng:127.316415,left:43.37,top:74.45},
+    {k:"care",sub:"지역아동센터",name:"토기장이지역아동센터",addr:"유성구 구즉로52번길 40",tel:"042-933-2111",hours:"학기중 10:00~20:30 / 방학중 10:00~20:30 (평일)",lat:36.433265,lng:127.386503,left:71.75,top:35.05},
+    {k:"care",sub:"지역아동센터",name:"하늘꿈지역아동센터",addr:"유성구 진잠로 74",tel:"042-541-6821",lat:36.298149,lng:127.316267,left:43.31,top:74.95},
+    {k:"care",sub:"지역아동센터",name:"한사랑지역아동센터",addr:"유성구 봉산로40번길 34, 1층",tel:"042-933-4542",lat:36.437547,lng:127.387469,left:72.14,top:33.78},
+    {k:"care",sub:"지역아동센터",name:"호산나반석지역아동센터",addr:"유성구 지족로 218-33, 2층",tel:"042-483-9611",lat:36.383754,lng:127.304077,left:38.37,top:49.67},
+    {k:"park",sub:"근린공원",name:"진잠근린공원",addr:"진잠동",lat:36.294651,lng:127.319414,left:44.58,top:75.99},
+    {k:"park",sub:"근린공원",name:"한샘근린공원",addr:"진잠동",lat:36.315128,lng:127.32067,left:45.09,top:69.94},
+    {k:"park",sub:"근린공원",name:"송숲근린공원",addr:"학하동",lat:36.359661,lng:127.304011,left:38.35,top:56.79},
+    {k:"park",sub:"근린공원",name:"용반들근린공원",addr:"원신흥동",lat:36.352078,lng:127.342433,left:53.9,top:59.03},
+    {k:"park",sub:"근린공원",name:"덜레기근린공원",addr:"원신흥동",lat:36.335969,lng:127.346151,left:55.41,top:63.78},
+    {k:"park",sub:"근린공원",name:"상대근린공원",addr:"상대동",lat:36.345185,lng:127.332438,left:49.86,top:61.06},
+    {k:"park",sub:"근린공원",name:"천년근린공원",addr:"상대동",lat:36.342269,lng:127.337312,left:51.83,top:61.92},
+    {k:"park",sub:"근린공원",name:"복용근린공원",addr:"온천1동",lat:36.34326,lng:127.30929,left:40.48,top:61.63},
+    {k:"park",sub:"근린공원",name:"궁동근린공원",addr:"온천2동",lat:36.364998,lng:127.351033,left:57.38,top:55.21},
+    {k:"park",sub:"근린공원",name:"죽동근린공원",addr:"온천2동",lat:36.374071,lng:127.336846,left:51.64,top:52.53},
+    {k:"park",sub:"근린공원",name:"두루봉근린공원",addr:"노은2동",lat:36.378164,lng:127.322499,left:45.83,top:51.32},
+    {k:"park",sub:"근린공원",name:"송림근린공원",addr:"노은2동",lat:36.387618,lng:127.318403,left:44.17,top:48.53},
+    {k:"park",sub:"근린공원",name:"갈마봉근린공원",addr:"노은3동",lat:36.384165,lng:127.318104,left:44.05,top:49.55},
+    {k:"park",sub:"근린공원",name:"해랑숲근린공원",addr:"노은3동",lat:36.384455,lng:127.302582,left:37.77,top:49.46},
+    {k:"park",sub:"근린공원",name:"금성근린공원",addr:"신성동",lat:36.387427,lng:127.347692,left:56.03,top:48.58},
+    {k:"park",sub:"근린공원",name:"엑스포근린공원",addr:"전민동",lat:36.398507,lng:127.405698,left:79.52,top:45.31},
+    {k:"park",sub:"근린공원",name:"왕골근린공원",addr:"전민동",lat:36.40068,lng:127.399299,left:76.93,top:44.67},
+    {k:"park",sub:"근린공원",name:"송강근린공원",addr:"구즉동",lat:36.435362,lng:127.384777,left:71.05,top:34.43},
+    {k:"park",sub:"근린공원",name:"장배기근린공원",addr:"관평동",lat:36.427752,lng:127.386499,left:71.74,top:36.67},
+    {k:"park",sub:"근린공원",name:"동화울수변근린공원",addr:"관평동",lat:36.424671,lng:127.395143,left:75.24,top:37.58},
+    {k:"park",sub:"근린공원",name:"오당골근린공원",addr:"관평동",lat:36.412318,lng:127.394405,left:74.95,top:41.23},
+    {k:"park",sub:"어린이공원",name:"원내어린이공원",addr:"진잠동",lat:36.300547,lng:127.318191,left:44.09,top:74.25},
+    {k:"park",sub:"어린이공원",name:"청룡어린이공원",addr:"진잠동",lat:36.298076,lng:127.318015,left:44.02,top:74.98},
+    {k:"park",sub:"어린이공원",name:"솔마루어린이공원",addr:"진잠동",lat:36.303582,lng:127.320311,left:44.95,top:73.35},
+    {k:"park",sub:"어린이공원",name:"별밭어린이공원",addr:"학하동",lat:36.341012,lng:127.305933,left:39.12,top:62.29},
+    {k:"park",sub:"어린이공원",name:"별빛어린이공원",addr:"학하동",lat:36.341782,lng:127.308331,left:40.09,top:62.07},
+    {k:"park",sub:"어린이공원",name:"호산어린이공원",addr:"학하동",lat:36.338709,lng:127.306266,left:39.26,top:62.97},
+    {k:"park",sub:"어린이공원",name:"학하어린이공원",addr:"학하동",lat:36.338754,lng:127.309719,left:40.66,top:62.96},
+    {k:"park",sub:"어린이공원",name:"학무정어린이공원",addr:"학하동",lat:36.339173,lng:127.312418,left:41.75,top:62.84},
+    {k:"park",sub:"어린이공원",name:"영당말어린이공원",addr:"학하동",lat:36.337453,lng:127.311671,left:41.45,top:63.35},
+    {k:"park",sub:"어린이공원",name:"계산어린이공원",addr:"학하동",lat:36.343255,lng:127.299296,left:36.44,top:61.63},
+    {k:"park",sub:"어린이공원",name:"원계산어린이공원",addr:"학하동",lat:36.336365,lng:127.299905,left:36.68,top:63.67},
+    {k:"park",sub:"어린이공원",name:"숲속어린이공원",addr:"학하동",lat:36.359945,lng:127.303142,left:37.99,top:56.7},
+    {k:"park",sub:"어린이공원",name:"시간어린이공원",addr:"학하동",lat:36.357585,lng:127.30451,left:38.55,top:57.4},
+    {k:"park",sub:"어린이공원",name:"미로어린이공원",addr:"학하동",lat:36.356618,lng:127.307769,left:39.87,top:57.68},
+    {k:"park",sub:"어린이공원",name:"와룡어린이공원",addr:"학하동",lat:36.341417,lng:127.314275,left:42.5,top:62.17},
+    {k:"park",sub:"어린이공원",name:"박산어린이공원",addr:"학하동",lat:36.343682,lng:127.311885,left:41.53,top:61.51},
+    {k:"park",sub:"어린이공원",name:"덕명어린이공원",addr:"학하동",lat:36.345344,lng:127.303176,left:38.01,top:61.01},
+    {k:"park",sub:"어린이공원",name:"화산어린이공원",addr:"학하동",lat:36.349122,lng:127.298923,left:36.29,top:59.9},
+    {k:"park",sub:"어린이공원",name:"봉명어린이공원",addr:"온천1동",lat:36.352848,lng:127.339234,left:52.61,top:58.8},
+    {k:"park",sub:"어린이공원",name:"원골어린이공원",addr:"온천1동",lat:36.349129,lng:127.339828,left:52.85,top:59.9},
+    {k:"park",sub:"어린이공원",name:"구암어린이공원",addr:"온천1동",lat:36.351002,lng:127.338951,left:52.49,top:59.34},
+    {k:"park",sub:"어린이공원",name:"진터어린이공원",addr:"온천1동",lat:36.351551,lng:127.33554,left:51.11,top:59.18},
+    {k:"park",sub:"어린이공원",name:"들말어린이공원",addr:"온천1동",lat:36.35343,lng:127.335582,left:51.13,top:58.63},
+    {k:"park",sub:"어린이공원",name:"인삼어린이공원",addr:"온천1동",lat:36.348954,lng:127.33386,left:50.43,top:59.95},
+    {k:"park",sub:"어린이공원",name:"방죽어린이공원",addr:"온천1동",lat:36.350618,lng:127.331804,left:49.6,top:59.46},
+    {k:"park",sub:"어린이공원",name:"창리어린이공원",addr:"온천1동",lat:36.355258,lng:127.333367,left:50.23,top:58.09},
+    {k:"park",sub:"어린이공원",name:"삼정어린이공원",addr:"온천1동",lat:36.352772,lng:127.330793,left:49.19,top:58.82},
+    {k:"park",sub:"어린이공원",name:"남산어린이공원",addr:"온천1동",lat:36.349479,lng:127.328283,left:48.17,top:59.79},
+    {k:"park",sub:"어린이공원",name:"로봇어린이공원",addr:"온천1동",lat:36.359513,lng:127.307186,left:39.63,top:56.83},
+    {k:"park",sub:"어린이공원",name:"대울어린이공원",addr:"온천2동",lat:36.369738,lng:127.337191,left:51.78,top:53.81},
+    {k:"park",sub:"어린이공원",name:"죽궁이어린이공원",addr:"노은1동",lat:36.373787,lng:127.315862,left:43.14,top:52.61},
+    {k:"park",sub:"어린이공원",name:"창뜰어린이공원",addr:"노은1동",lat:36.371722,lng:127.316977,left:43.6,top:53.22},
+    {k:"park",sub:"어린이공원",name:"논골어린이공원",addr:"노은1동",lat:36.371883,lng:127.320093,left:44.86,top:53.18},
+    {k:"park",sub:"어린이공원",name:"노은어린이공원",addr:"노은1동",lat:36.370778,lng:127.320773,left:45.13,top:53.5},
+    {k:"park",sub:"어린이공원",name:"덕미어린이공원",addr:"노은1동",lat:36.368277,lng:127.316119,left:43.25,top:54.24},
+    {k:"park",sub:"어린이공원",name:"속들어린이공원",addr:"노은1동",lat:36.368282,lng:127.321672,left:45.5,top:54.24},
+    {k:"park",sub:"어린이공원",name:"수정어린이공원",addr:"노은1동",lat:36.364866,lng:127.315777,left:43.11,top:55.25},
+    {k:"park",sub:"어린이공원",name:"새미래어린이공원",addr:"노은2동",lat:36.381961,lng:127.317405,left:43.77,top:50.2},
+    {k:"park",sub:"어린이공원",name:"지족실어린이공원",addr:"노은2동",lat:36.378117,lng:127.317294,left:43.72,top:51.33},
+    {k:"park",sub:"어린이공원",name:"안산어린이공원",addr:"노은2동",lat:36.378123,lng:127.319738,left:44.71,top:51.33},
+    {k:"park",sub:"어린이공원",name:"윗텃골어린이공원",addr:"노은2동",lat:36.388882,lng:127.330946,left:49.25,top:48.15},
+    {k:"park",sub:"어린이공원",name:"아래텃골어린이공원",addr:"노은2동",lat:36.387083,lng:127.331456,left:49.46,top:48.69},
+    {k:"park",sub:"어린이공원",name:"저들이어린이공원",addr:"노은2동",lat:36.380637,lng:127.324725,left:46.73,top:50.59},
+    {k:"park",sub:"어린이공원",name:"양지말어린이공원",addr:"노은3동",lat:36.393311,lng:127.313017,left:41.99,top:46.85},
+    {k:"park",sub:"어린이공원",name:"반석어린이공원",addr:"노은3동",lat:36.389691,lng:127.314635,left:42.65,top:47.92},
+    {k:"park",sub:"어린이공원",name:"숯골어린이공원",addr:"신성동",lat:36.390882,lng:127.350694,left:57.25,top:47.56},
+    {k:"park",sub:"어린이공원",name:"전민어린이공원",addr:"전민동",lat:36.398157,lng:127.401036,left:77.63,top:45.41},
+    {k:"park",sub:"어린이공원",name:"전광어린이공원",addr:"전민동",lat:36.397472,lng:127.403321,left:78.56,top:45.62},
+    {k:"park",sub:"어린이공원",name:"산수어린이공원",addr:"전민동",lat:36.400435,lng:127.395608,left:75.43,top:44.74},
+    {k:"park",sub:"어린이공원",name:"엉고개어린이공원",addr:"구즉동",lat:36.431418,lng:127.384091,left:70.77,top:35.59},
+    {k:"park",sub:"어린이공원",name:"송강어린이공원",addr:"구즉동",lat:36.435362,lng:127.384777,left:71.05,top:34.43},
+    {k:"park",sub:"어린이공원",name:"장성어린이공원",addr:"구즉동",lat:36.437901,lng:127.387415,left:72.11,top:33.68},
+    {k:"park",sub:"어린이공원",name:"봉산어린이공원",addr:"구즉동",lat:36.435905,lng:127.387937,left:72.33,top:34.27},
+    {k:"park",sub:"어린이공원",name:"한들어린이공원",addr:"관평동",lat:36.420354,lng:127.384415,left:70.9,top:38.86},
+    {k:"park",sub:"어린이공원",name:"배울골어린이공원",addr:"관평동",lat:36.419821,lng:127.388294,left:72.47,top:39.02},
+    {k:"park",sub:"어린이공원",name:"아래관들어린이공원",addr:"관평동",lat:36.424203,lng:127.386363,left:71.69,top:37.72},
+    {k:"park",sub:"어린이공원",name:"윗관들어린이공원",addr:"관평동",lat:36.422858,lng:127.391198,left:73.65,top:38.12},
+    {k:"park",sub:"어린이공원",name:"방아다리어린이공원",addr:"관평동",lat:36.418107,lng:127.393448,left:74.56,top:39.52},
+    {k:"park",sub:"어린이공원",name:"용산골어린이공원",addr:"관평동",lat:36.419375,lng:127.399067,left:76.83,top:39.15},
+    {k:"park",sub:"어린이공원",name:"오랭이어린이공원",addr:"관평동",lat:36.417274,lng:127.39743,left:76.17,top:39.77},
+    {k:"park",sub:"소공원",name:"구천봉소공원(해바라기)",addr:"원신흥동",lat:36.345219,lng:127.342456,left:53.91,top:61.05},
+    {k:"park",sub:"소공원",name:"느리울소공원(달바라기)",addr:"원신흥동",lat:36.344617,lng:127.342442,left:53.91,top:61.23},
+    {k:"park",sub:"소공원",name:"창골소공원(별바라기)",addr:"원신흥동",lat:36.34476,lng:127.342826,left:54.06,top:61.19},
+    {k:"park",sub:"소공원",name:"동방소공원(하늘바라기)",addr:"원신흥동",lat:36.345214,lng:127.343542,left:54.35,top:61.05},
+    {k:"park",sub:"소공원",name:"용반소공원",addr:"온천1동",lat:36.352978,lng:127.348125,left:56.21,top:58.76},
+    {k:"park",sub:"소공원",name:"온천소공원",addr:"온천1동",lat:36.356167,lng:127.344276,left:54.65,top:57.82},
+    {k:"park",sub:"소공원",name:"봉암소공원",addr:"온천2동",lat:36.361519,lng:127.351804,left:57.7,top:56.24},
+    {k:"park",sub:"주제공원(역사)",name:"은구비공원",addr:"노은1동",lat:36.372831,lng:127.324215,left:46.53,top:52.9},
+    {k:"park",sub:"주제공원(문화)",name:"유성온천공원",addr:"온천1동",lat:36.355018,lng:127.345676,left:55.22,top:58.16},
+    {k:"park",sub:"주제공원(문화)",name:"유림공원",addr:"온천1동",lat:36.360963,lng:127.357712,left:60.09,top:56.4},
+    {k:"park",sub:"주제공원(문화)",name:"죽동지구공원",addr:"온천2동",lat:36.374071,lng:127.336846,left:51.64,top:52.53},
+    {k:"park",sub:"주제공원(수변)",name:"작은내공원",addr:"원신흥동",lat:36.341637,lng:127.342117,left:53.77,top:62.11}
   ];
 
   // 아동안전지킴이집 63곳 — 경찰청 안전Dream 안전지도 Open API(clArray=09)에서 2026-11-17 받은 값.
   // 페이지를 열 때마다 부르지 않는다: 인증키가 파일째 공개되고, 하루 조회 한도도 있다.
-  // 위경도를 학교와 같은 투영식으로 바꿨고, 겹침 때문에 옮기지는 않았다(실제 자리 그대로).
+  // 위경도를 시설과 같은 투영식으로 바꿨고, 겹침 때문에 옮기지는 않았다(실제 자리 그대로).
   const GUARDS = [
     {name:'CU 대전지족드림점', addr:'유성구 은구비남로 39', tel:'042-824-0519', left:44.86, top:53.02, lat:36.372393, lng:127.320098},
     {name:'CU관평한화점', addr:'유성구 배울2로 61-0,상가2동', tel:'', left:73.89, top:38.56, lat:36.421357, lng:127.391787},
@@ -1263,10 +1373,7 @@
   NOTICES.forEach(n => n.id = n.date + '|' + n.title);
 
   const ICONS = {
-    '행사거점': {shape:'tower-stripe', roof:'#FF9B78'},
     '문화의집': {shape:'peak', roof:'#FFAE70'},
-    '돌봄시설': {shape:'peak', roof:'#6FD4C4'},
-    '과학관':   {shape:'flat', roof:'#A98CE8'},
     '수련관':   {shape:'tower', roof:'#78B6E8', roofDark:'#5B8FD6'},
     '상담복지': {shape:'flat', roof:'#FF9EC0'},
     '진로체험': {shape:'flat', roof:'#B79BF0'},
@@ -1371,19 +1478,10 @@
       </svg>`;
   }
 
-  function chestSvg(){
-    return `
-      <svg class="chest-icon" viewBox="0 0 44 44">
-        <ellipse cx="22" cy="40" rx="13" ry="3.4" fill="rgba(40,70,30,.26)"/>
-        <polygon points="8,20 22,27 22,39 8,32" fill="var(--gold)"/>
-        <polygon points="8,20 22,27 22,31 8,24" fill="rgba(255,255,255,.3)"/>
-        <polygon points="22,27 36,20 36,32 22,39" fill="var(--gold-dark)"/>
-        <polygon points="29,23.5 36,20 36,32 29,35.5" fill="rgba(40,28,16,.16)"/>
-        <polygon points="8,20 22,13 36,20 22,27" fill="var(--gold-light)"/>
-        <polygon points="22,13 36,20 22,27" fill="rgba(40,28,16,.1)"/>
-        <circle cx="22" cy="29" r="3.2" fill="#FFFFFF"/>
-        <circle cx="21" cy="28" r="1.2" fill="rgba(40,28,16,.22)"/>
-      </svg>`;
+  // 유성구 캐릭터 '유성이' 얼굴 — 「유성이 매뉴얼북」(2026) BS09 캐릭터 표정 '기본'을
+  // PDF 벡터에서 그대로 옮겼다. 매뉴얼 규정상 모양·색·비율을 바꾸지 말 것.
+  function yuseongiFace(){
+    return `<svg class="me-face" aria-hidden="true" viewBox="0 0 213.7 170.8"><path fill="#F3CFBC" d="M160.5 100.8C160.5 100.8 161.4 92 170.4 92.2C179.4 92.4 183.6 102.4 180.9 110.1C178.2 117.8 168.1 119.5 168.1 119.5"/><path fill="#E5BCAA" d="M171.9 112.9C172.3 112.5 172.8 112.1 173.2 111.5C173.2 111.5 177.8 106.4 174.3 99.9C173.2 97.9 170.8 96.9 168.7 97.6C167.4 98 166.1 99.1 165.6 101.6L167.8 112.2C168.8 113.5 170.6 113.9 171.9 112.9"/><path fill="#D69383" d="M165.5 104.2C165.2 104.2 164.9 104 164.9 103.7C164.8 101 165.5 99.1 166.9 98C168.7 96.4 171.2 96.8 171.3 96.9C171.6 96.9 171.8 97.2 171.8 97.5C171.7 97.9 171.4 98.1 171.1 98C171.1 98 169 97.6 167.6 98.9C166.5 99.8 166 101.4 166.1 103.6C166.1 103.9 165.8 104.2 165.5 104.2L165.5 104.2"/><path fill="#F3CFBC" d="M51.7 100.8C51.7 100.8 50.8 92 41.8 92.2C32.8 92.4 28.6 102.4 31.3 110.1C34 117.8 44.1 119.5 44.1 119.5"/><path fill="#E5BCAA" d="M40.3 112.9C39.9 112.5 39.4 112.1 39 111.5C39 111.5 34.4 106.4 37.9 99.9C39 97.9 41.4 96.9 43.5 97.6C44.9 98 46.1 99.1 46.6 101.6L44.4 112.2C43.4 113.5 41.6 113.9 40.3 112.9"/><path fill="#D69383" d="M46.7 104.2L46.7 104.2C46.4 104.2 46.1 103.9 46.1 103.6C46.2 101.4 45.7 99.8 44.6 98.9C43.2 97.6 41.2 98 41.1 98C40.8 98.1 40.5 97.9 40.5 97.5C40.4 97.2 40.6 96.9 40.9 96.9C41 96.8 43.5 96.4 45.4 98C46.7 99.1 47.4 101 47.3 103.7C47.3 104 47 104.2 46.7 104.2"/><path fill="#F3CFBC" d="M46.1 79.6C46.1 79.6 46.2 96.3 42.2 107.7C42.2 107.7 32.8 127.2 51.2 138.8C51.2 138.8 97.6 169.3 155 142.5C155 142.5 179.4 131.4 170.4 107.9C170.4 107.9 164.6 93.4 167 76.2C167 76.2 103.1 24.4 46.1 79.6"/><path fill="#724E2C" d="M153.8 72.5C153.8 72.5 156.9 88.5 166.6 94.6C166.6 94.6 173.5 88.5 168.9 77.6C168.9 77.6 159.6 73.8 153.8 72.5"/><path fill="#724E2C" d="M57 73.6C57 73.6 56.2 89.3 46.6 95.7C46.6 95.7 40 87.7 43 78.1C43 78.1 51.2 75 57 73.6"/><path fill="#724E2C" d="M87.5 74.4C87.5 74.4 94.9 97.7 127.7 87.1C127.7 87.1 122 85.1 122.9 77.4C122.9 77.4 123.7 86.8 147.1 87.6C147.1 87.6 143.4 85.5 144.2 79.7C144.2 79.7 151.7 91.3 165.1 91.3C165.1 91.3 158.5 85.9 159.8 78.7C159.8 78.7 139.9 61.5 106.7 64.4C106.7 64.4 96.7 71.3 87.5 74.4"/><path fill="#F6F8F9" d="M165.4 58.7C165.4 58.7 132 51.5 104.9 69C104.9 69 69 90.8 42 80.5C42 80.5 31.1 47.7 51.2 31.3C51.2 31.3 81.1 2 132.5 12.6C132.5 12.6 165.5 20.7 173.9 48.5C173.9 48.5 178.2 63.9 171.7 81.3C171.7 81.3 134 65 111.4 65.3C111.4 65.3 133.5 53.1 165.4 58.7"/><path fill="#EAEBED" d="M154.5 57.4C155.4 57.4 150 57.1 146.5 57.5C135.4 58.5 123.1 59.6 113.3 64.7C112.8 64.9 112.4 65.1 111.9 65.3C134.5 65.2 171.7 81.3 171.7 81.3C174.2 74.6 175.1 68.2 175.3 62.8C171 58.1 155.4 57.4 154.5 57.4"/><path fill="#D3D4D6" d="M42.5 80.1C68.9 89.9 104.3 68.7 104.6 68.5C106.7 67.2 108.8 66 111 64.9C111 64.8 111.1 64.8 111.2 64.7C111.2 64.7 114.7 62.9 120.7 60.9C125.8 59.2 131 58.2 135.9 57.5C142.5 56.6 150.4 56.3 159 57.2C163 57.6 165.5 58.1 165.6 58.1C165.9 58.2 166.1 58.5 166 58.8C165.9 59.1 165.6 59.3 165.3 59.2C163 58.8 160.8 58.5 158.6 58.3C153.2 57.8 145.1 57.5 136 58.7C130.2 59.5 125.3 60.7 121.4 61.9C119 62.7 116.5 63.6 114.1 64.7C135.2 65.6 166.8 78.6 171.4 80.5C177.5 63.8 173.3 48.8 173.3 48.6C165.1 21.5 132.7 13.2 132.4 13.1C81.9 2.8 51.9 31.4 51.6 31.7C33 46.9 41.5 77 42.5 80.1M57.9 83.8C52.4 83.8 46.9 83 41.8 81.1C41.6 81 41.5 80.9 41.4 80.7C41.3 80.4 30.7 47.3 50.8 30.9C51.1 30.6 81.5 1.5 132.6 12C133 12.1 166 20.5 174.4 48.3C174.5 48.5 178.8 64.1 172.2 81.5C172.2 81.7 172.1 81.8 171.9 81.8C171.8 81.9 171.6 81.9 171.5 81.8C171.1 81.7 134.3 65.8 112 65.8C111.9 65.8 111.8 65.8 111.7 65.8C109.5 66.9 107.4 68.1 105.2 69.5C104.9 69.7 81.3 83.8 57.9 83.8"/><path fill="#D3D4D6" d="M39.4 62.7C39 62.7 38.8 62.4 38.8 62.1C38.8 61.8 39 61.5 39.3 61.5C39.5 61.5 52.1 61 60.3 46.1C60.4 45.8 60.8 45.7 61.1 45.9C61.4 46.1 61.5 46.4 61.3 46.7C52.8 62.1 39.5 62.7 39.4 62.7L39.4 62.7"/><path fill="#D3D4D6" d="M39.2 69.2C39 69.2 38.8 69.1 38.7 69C38.5 68.7 38.5 68.4 38.8 68.2C44.8 63 55 67.4 55.4 67.6C55.7 67.8 55.8 68.1 55.7 68.4C55.6 68.7 55.2 68.8 54.9 68.7C54.8 68.7 45 64.4 39.6 69C39.4 69.1 39.3 69.2 39.2 69.2"/><path fill="#D3D4D6" d="M135.7 29.5C135.6 29.5 135.5 29.5 135.4 29.5C110.5 19.7 93.2 28.7 93.1 28.8C92.8 28.9 92.4 28.8 92.3 28.5C92.1 28.3 92.2 27.9 92.5 27.8C92.7 27.7 110.4 18.4 135.9 28.4C136.2 28.5 136.3 28.8 136.2 29.1C136.1 29.4 135.9 29.5 135.7 29.5"/><path fill="#D3D4D6" d="M169 56.8C168.9 56.8 168.8 56.8 168.6 56.7C160.1 48.8 151.7 48.4 151.6 48.4C151.3 48.4 151 48.1 151 47.8C151 47.5 151.3 47.2 151.6 47.2C152 47.2 160.5 47.7 169.4 55.8C169.7 56 169.7 56.4 169.5 56.7C169.4 56.8 169.2 56.8 169 56.8"/><path fill="#E6AAAC" d="M74.5 124.7C74.4 131.3 68.1 136.7 60.3 136.6C52.5 136.6 46.2 131.1 46.3 124.5C46.3 117.9 52.7 112.5 60.5 112.6C68.3 112.6 74.5 118.1 74.5 124.7"/><path fill="#D18588" d="M52.6 122.3C52.4 122.3 52.2 122.2 52.1 122.1C51.9 121.8 52 121.5 52.2 121.3L55 119C55.3 118.8 55.7 118.8 55.9 119.1C56.1 119.3 56 119.7 55.8 119.9L52.9 122.2C52.8 122.3 52.7 122.3 52.6 122.3"/><path fill="#D18588" d="M54.8 124.9C54.6 124.9 54.4 124.9 54.3 124.7C54.1 124.5 54.1 124.1 54.4 123.9L60.2 119.1C60.5 118.9 60.8 118.9 61.1 119.2C61.3 119.4 61.2 119.8 61 120L55.1 124.8C55 124.9 54.9 124.9 54.8 124.9"/><path fill="#D18588" d="M59.9 124.9C59.8 124.9 59.6 124.9 59.5 124.7C59.3 124.5 59.3 124.1 59.6 123.9L63.9 120.4C64.1 120.1 64.5 120.2 64.7 120.4C64.9 120.7 64.9 121 64.6 121.2L60.3 124.8C60.2 124.9 60.1 124.9 59.9 124.9"/><path fill="#D18588" d="M63.6 125.4C63.4 125.4 63.3 125.3 63.2 125.2C63 124.9 63 124.6 63.2 124.4L66.7 121.5C67 121.3 67.4 121.3 67.6 121.6C67.8 121.8 67.7 122.2 67.5 122.4L64 125.3C63.9 125.4 63.7 125.4 63.6 125.4"/><path fill="#E6AAAC" d="M165.1 124.7C165.1 131.3 158.7 136.7 150.9 136.6C143.1 136.6 136.9 131.1 136.9 124.5C137 117.9 143.3 112.5 151.1 112.6C158.9 112.6 165.2 118.1 165.1 124.7"/><path fill="#D18588" d="M143.2 122.3C143.1 122.3 142.9 122.2 142.8 122.1C142.6 121.8 142.6 121.5 142.9 121.3L145.7 119C145.9 118.8 146.3 118.8 146.5 119.1C146.7 119.3 146.7 119.7 146.4 119.9L143.6 122.2C143.5 122.3 143.4 122.3 143.2 122.3"/><path fill="#D18588" d="M145.4 124.9C145.2 124.9 145.1 124.9 145 124.7C144.7 124.5 144.8 124.1 145 123.9L150.9 119.1C151.1 118.9 151.5 118.9 151.7 119.2C151.9 119.4 151.9 119.8 151.6 120L145.8 124.8C145.7 124.9 145.5 124.9 145.4 124.9"/><path fill="#D18588" d="M150.6 124.9C150.4 124.9 150.3 124.9 150.1 124.7C149.9 124.5 150 124.1 150.2 123.9L154.5 120.4C154.8 120.1 155.2 120.2 155.4 120.4C155.6 120.7 155.5 121 155.3 121.2L151 124.8C150.9 124.9 150.7 124.9 150.6 124.9"/><path fill="#D18588" d="M154.3 125.4C154.1 125.4 153.9 125.3 153.8 125.2C153.6 124.9 153.6 124.6 153.9 124.4L157.4 121.5C157.6 121.3 158 121.3 158.2 121.6C158.4 121.8 158.4 122.2 158.1 122.4L154.6 125.3C154.5 125.4 154.4 125.4 154.3 125.4"/><path fill="#D69383" d="M102.7 120.5C102.6 120.5 102.5 120.5 102.4 120.4C102.1 120.2 102 119.9 102.2 119.6C102.2 119.5 103.5 117.2 105.6 117.1C107 117 108.2 117.8 109.5 119.5C109.6 119.8 109.6 120.2 109.3 120.4C109 120.5 108.7 120.5 108.5 120.2C107.5 118.8 106.6 118.2 105.7 118.2C104.2 118.3 103.2 120.2 103.2 120.2C103.1 120.4 102.9 120.5 102.7 120.5"/><path fill="#E5BCAA" d="M111.5 144.6C111.8 144.2 111.2 143.8 110.5 143.9C109.1 144.3 107.4 144.4 105.9 144.4C104.3 144.4 102.6 144.3 101.3 143.9C100.6 143.8 100 144.2 100.3 144.6C102.3 146.8 106.7 150.6 111.5 144.6"/><path fill="#F6F8F9" d="M50.6 46.7C50.6 46.7 52.3 26.1 29.8 30.7C29.8 30.7 23.7 32.7 21 37.8C21 37.8 22.7 37.3 25.2 39.5C25.2 39.5 19.9 34.8 14.5 41.1C14.5 41.1 2.1 58.9 11.2 78.7C11.2 78.7 14.5 87.4 25.2 84.6C25.2 84.6 20.3 85.8 16.7 84.6C16.7 84.6 17.9 94.7 29.8 95.6C29.8 95.6 53.1 98.7 49.7 72.6"/><path fill="#EAEBED" d="M38.3 79.6C33.6 79.6 29.4 77.9 26.1 75.2C24.9 74.3 23.3 73.9 21.9 74.4C20.3 74.9 18 75.5 15.5 75.6C13.5 75.6 11.5 75.3 9.6 74.6C10 76 10.5 77.3 11.2 78.7C11.2 78.7 13.6 84.9 20.9 85.1C19.5 85.1 18 85 16.7 84.6C16.7 84.6 17.9 94.7 29.8 95.6C29.8 95.6 51.2 98.5 50 75.7C46.6 78.1 42.5 79.6 38.3 79.6"/><path fill="#D3D4D6" d="M32.1 96.3C30.7 96.3 29.8 96.2 29.7 96.1C17.5 95.2 16.1 84.8 16.1 84.6C16.1 84.6 16.1 84.6 16.1 84.6C12.1 82.7 10.7 79 10.6 78.9C1.5 59 13.9 41 14 40.8C15.9 38.6 18 37.4 20.2 37.3C20.3 37.3 20.5 37.3 20.6 37.3C23.5 32.2 29.4 30.2 29.7 30.1C36.9 28.6 42.5 29.6 46.2 32.9C51.9 37.9 51.2 46.4 51.2 46.8C51.2 47.1 50.9 47.3 50.6 47.3C50.3 47.3 50 47 50.1 46.7C50.1 46.6 50.7 38.4 45.5 33.7C42 30.7 36.8 29.8 30 31.2C30 31.2 24.8 33 22 37.2C22.8 37.4 24.1 37.8 25.6 39C25.6 39.1 25.6 39.1 25.6 39.1C25.9 39.3 25.9 39.7 25.7 39.9C25.5 40.2 25.1 40.2 24.9 40C24.9 40 24.8 40 24.8 39.9C24.6 39.7 22.7 38.3 20.2 38.4C18.4 38.6 16.6 39.6 14.9 41.5C14.8 41.6 2.8 59.2 11.7 78.5C11.8 78.8 14 84.1 20.3 84.5C22.9 84.5 25 84 25 84C25.4 83.9 25.7 84.1 25.7 84.4C25.8 84.8 25.6 85.1 25.3 85.2C23.5 85.6 21.9 85.8 20.5 85.7C19.5 85.7 18.4 85.6 17.4 85.4C18 87.8 20.5 94.3 29.8 95C29.9 95 39.2 96.2 44.9 90.5C48.8 86.7 50.2 80.7 49.1 72.7C49.1 72.4 49.3 72.1 49.6 72C49.9 72 50.2 72.2 50.3 72.5C51.4 80.9 49.8 87.3 45.8 91.3C41.5 95.6 35.5 96.3 32.1 96.3"/><path fill="#F6F8F9" d="M163.2 46.9C163.2 46.9 161.5 26.3 184 30.9C184 30.9 190.1 32.9 192.8 38C192.8 38 191.1 37.6 188.6 39.7C188.6 39.7 193.9 35 199.3 41.4C199.3 41.4 211.7 59.1 202.5 78.9C202.5 78.9 199.2 87.5 188.5 84.7C188.5 84.7 193.3 85.9 197 84.7C197 84.7 195.8 94.8 183.9 95.7C183.9 95.7 160.6 98.8 164.1 72.7"/><path fill="#EAEBED" d="M175.4 79.7C180.1 79.7 184.3 78.1 187.6 75.4C188.8 74.4 190.4 74.1 191.8 74.6C193.4 75.1 195.7 75.7 198.1 75.8C200.2 75.8 202.2 75.5 204.1 74.8C203.7 76.2 203.1 77.5 202.5 78.9C202.5 78.9 200.1 85.1 192.8 85.3C194.2 85.3 195.7 85.2 197 84.7C197 84.7 195.8 94.8 183.9 95.7C183.9 95.7 162.5 98.5 163.8 75.8C167.2 78.2 171.2 79.7 175.4 79.7"/><path fill="#D3D4D6" d="M181.6 96.4C178.3 96.4 172.2 95.7 167.9 91.4C163.9 87.3 162.4 81 163.5 72.6C163.5 72.3 163.8 72.1 164.1 72.1C164.5 72.2 164.7 72.5 164.6 72.8C163.6 80.8 165 86.8 168.8 90.6C174.4 96.3 183.7 95.1 183.8 95.1C193.2 94.4 195.7 88 196.2 85.6C195.2 85.8 194.2 85.9 193.2 85.9L193.2 85.9C191.7 85.9 190.1 85.8 188.3 85.3C188 85.2 187.8 84.9 187.9 84.6C188 84.3 188.3 84.1 188.6 84.2C188.7 84.2 190.8 84.7 193.2 84.7L193.3 84.7C199.7 84.3 201.8 79 202 78.7C210.9 59.4 198.9 41.9 198.8 41.7C197.2 39.8 195.4 38.8 193.6 38.7C191.1 38.5 189.2 40 189 40.2C189 40.2 188.9 40.2 188.9 40.2C188.7 40.4 188.3 40.4 188.1 40.1C187.9 39.9 187.9 39.5 188.2 39.3C188.2 39.3 188.2 39.3 188.2 39.2C189.7 38 191 37.6 191.8 37.5C189 33.2 183.9 31.4 183.8 31.4C177.1 30 171.8 30.9 168.4 33.9C163.2 38.5 163.8 46.7 163.8 46.8C163.8 47.1 163.6 47.4 163.2 47.5C162.9 47.5 162.6 47.2 162.6 46.9C162.6 46.6 162 38 167.6 33C171.4 29.7 176.9 28.8 184.1 30.3C184.4 30.4 190.3 32.4 193.2 37.5C193.3 37.5 193.5 37.5 193.6 37.5C195.8 37.7 197.9 38.8 199.7 41C199.9 41.2 212.2 59.3 203 79.2C203 79.2 201.5 82.9 197.6 84.8C197.6 84.8 197.6 84.8 197.6 84.8C197.6 84.9 196.2 95.4 183.9 96.3C183.8 96.3 182.9 96.4 181.6 96.4"/><path fill="#FFFFFF" d="M87.3 106.3C87.3 115.7 80.9 123.4 73 123.4C65.1 123.4 58.6 115.7 58.6 106.3C58.6 96.9 65.1 89.3 73 89.3C80.9 89.3 87.3 96.9 87.3 106.3"/><path fill="#221815" d="M58.6 106.6C57 95.2 68.1 83.7 79.4 89.9C85.1 93.1 88.1 100.2 87.4 106.4C86.6 98.7 81.1 90.5 72.9 90.5C64.7 90.6 59.4 98.9 58.6 106.6"/><path fill="#221815" d="M86.8 107.9C86.8 115.4 81.9 121.5 75.7 121.5C69.6 121.5 64.6 115.4 64.6 107.9C64.6 100.3 69.6 94.2 75.7 94.2C81.9 94.2 86.8 100.3 86.8 107.9"/><path fill="#FFFFFF" d="M79.6 101.9C79.6 104.1 77.7 105.9 75.4 105.8C73.2 105.8 71.4 103.9 71.5 101.7C71.5 99.4 73.4 97.7 75.7 97.7C77.9 97.8 79.7 99.6 79.6 101.9"/><path fill="#FFFFFF" d="M72.6 106C72.6 107.4 71.4 108.4 70 108.4C68.7 108.4 67.6 107.2 67.6 105.9C67.7 104.5 68.8 103.4 70.2 103.4C71.5 103.5 72.6 104.6 72.6 106"/><path fill="#FFFFFF" d="M124.1 106.3C124.1 115.7 130.5 123.4 138.4 123.4C146.4 123.4 152.8 115.7 152.8 106.3C152.8 96.9 146.4 89.3 138.4 89.3C130.5 89.3 124.1 96.9 124.1 106.3"/><path fill="#221815" d="M152.8 106.6C152 98.9 146.7 90.6 138.5 90.5C130.3 90.5 124.9 98.7 124 106.4C123.3 100.2 126.3 93.1 132 89.9C143.3 83.7 154.4 95.2 152.8 106.6"/><path fill="#221815" d="M124.6 107.9C124.6 115.4 129.5 121.5 135.7 121.5C141.8 121.5 146.8 115.4 146.8 107.9C146.8 100.3 141.8 94.2 135.7 94.2C129.5 94.2 124.6 100.3 124.6 107.9"/><path fill="#FFFFFF" d="M140 101.9C140 104.1 138.1 105.9 135.8 105.8C133.6 105.8 131.8 103.9 131.9 101.7C132 99.4 133.8 97.7 136.1 97.7C138.3 97.8 140.1 99.6 140 101.9"/><path fill="#FFFFFF" d="M133 106C133 107.4 131.8 108.4 130.5 108.4C129.1 108.4 128 107.2 128 105.9C128.1 104.5 129.2 103.4 130.6 103.4C132 103.5 133 104.6 133 106"/><path fill="#221815" d="M105.7 134.3C107.5 133.3 109.8 132.6 112.3 132.6C115.4 132.6 118.2 133.6 120.1 135.1C123.1 129.7 123.1 123.6 123.1 123.6C123.1 123.6 117.5 125.3 106 125.3C94.5 125.3 88.4 123.6 88.4 123.6C88.4 123.6 88.1 129.8 91.1 135.2C93.1 133.7 96 132.6 99.1 132.6C101.6 132.6 103.9 133.3 105.7 134.3"/><path fill="#E58B8C" d="M106.1 143.2C113.6 143.2 117.8 139.4 120.1 135.1C118.2 133.6 115.4 132.6 112.3 132.6C109.8 132.6 107.5 133.3 105.7 134.3C103.9 133.3 101.6 132.6 99.1 132.6C96 132.6 93.1 133.7 91.1 135.2C93.5 139.5 97.9 143.2 106.1 143.2"/></svg>`;
   }
 
   function locateSvg(){
@@ -1429,40 +1527,33 @@
     legend.appendChild(row);
   });
 
-  const chestButtons = [];
-  CHESTS.forEach(ch=>{
+  // 레이어별 색. 칩 줄 순서도 이 순서를 따른다.
+  const PLACE_KIND = {
+    park:    {label:'공원',     color:'#2C7A3F'},
+    library: {label:'도서관',   color:'#9B6BD3'},
+    public:  {label:'공공시설', color:'#5A6FD6'},
+    care:    {label:'돌봄시설', color:'#F08A3C'},
+  };
+  const placeButtons = [];
+  PLACES.forEach(p=>{
     const btn = document.createElement('button');
-    btn.className = 'chest-btn';
-    btn.style.left = ch.left + '%';
-    btn.style.top = ch.top + '%';
-    btn.setAttribute('aria-label', ch.label + ' 급식카드 가맹점 보기');
-    btn.innerHTML = chestSvg();
-    btn.addEventListener('click', ()=>openChest(ch));
-    pinLayer.appendChild(btn);
-    chestButtons.push(btn);
-  });
-
-  const SCHOOL_COLOR = {'초':'#F4A64B','중':'#3FA9A0','고':'#6C7FD8'};
-  const SCHOOL_LABEL = {'초':'초등학교','중':'중학교','고':'고등학교'};
-  const schoolButtons = [];
-  SCHOOLS.forEach(sc=>{
-    const btn = document.createElement('button');
-    btn.className = 'school-dot';
-    btn.style.left = sc.left + '%';
-    btn.style.top = sc.top + '%';
-    btn.style.setProperty('--c', SCHOOL_COLOR[sc.lv]);
-    btn.setAttribute('aria-label', sc.name);
+    btn.className = 'place-dot';
+    btn.style.left = p.left + '%';
+    btn.style.top = p.top + '%';
+    btn.style.setProperty('--c', PLACE_KIND[p.k].color);
+    btn.setAttribute('aria-label', p.name + ' (' + p.sub + ')');
     btn.innerHTML = '<i></i>';
-    btn.addEventListener('click', ()=>openSchool(sc));
-    pinLayer.appendChild(btn);
-    schoolButtons.push({el:btn, sc});
+    btn.addEventListener('click', ()=>openPlace(p));
+    // 공원만 93곳이라 시설 핀을 덮지 않게 맨 아래에 깐다.
+    pinLayer.insertBefore(btn, pinLayer.firstChild);
+    placeButtons.push(btn);
   });
 
   const GUARD_COLOR = '#E0507A';
   const guardButtons = [];
   GUARDS.forEach(g=>{
     const btn = document.createElement('button');
-    btn.className = 'school-dot guard';
+    btn.className = 'place-dot guard';
     btn.style.left = g.left + '%';
     btn.style.top = g.top + '%';
     btn.style.setProperty('--c', GUARD_COLOR);
@@ -1475,12 +1566,12 @@
   });
 
   const LAYERS = [
+    {id:'park',     label:'공원',       color:PLACE_KIND.park.color,    on:false},
+    {id:'library',  label:'도서관',     color:PLACE_KIND.library.color, on:false},
+    {id:'public',   label:'공공시설',   color:PLACE_KIND.public.color,  on:false},
+    {id:'care',     label:'돌봄시설',   color:PLACE_KIND.care.color,    on:false},
     {id:'facility', label:'청소년시설', color:'#78B6E8', on:true},
     {id:'guard',    label:'지킴이집',   color:GUARD_COLOR, on:false},
-    {id:'chest',    label:'급식카드',   color:'var(--gold)', on:true},
-    {id:'초',       label:'초등학교',   color:SCHOOL_COLOR['초'], on:false},
-    {id:'중',       label:'중학교',     color:SCHOOL_COLOR['중'], on:false},
-    {id:'고',       label:'고등학교',   color:SCHOOL_COLOR['고'], on:false},
   ];
 
   function loadLayerState(){
@@ -1499,8 +1590,7 @@
 
   function applyLayers(){
     Object.values(pinButtons).forEach(b=>{ b.hidden = !layerOn('facility'); });
-    chestButtons.forEach(b=>{ b.hidden = !layerOn('chest'); });
-    schoolButtons.forEach(({el, sc})=>{ el.hidden = !layerOn(sc.lv); });
+    placeButtons.forEach((b, i)=>{ b.hidden = !layerOn(PLACES[i].k); });
     guardButtons.forEach(b=>{ b.hidden = !layerOn('guard'); });
     legend.hidden = !layerOn('facility');
   }
@@ -1538,11 +1628,23 @@
   const locateBtn = document.createElement('button');
   locateBtn.className = 'locate-btn';
   locateBtn.type = 'button';
-  locateBtn.title = '내 위치에서 가까운 시설 찾기';
-  locateBtn.setAttribute('aria-label', '내 위치에서 가까운 시설 찾기');
+  locateBtn.title = '지도에서 내 위치 보기';
+  locateBtn.setAttribute('aria-label', '지도에서 내 위치 보기');
   locateBtn.innerHTML = locateSvg();
-  locateBtn.addEventListener('click', findNearby);
+  locateBtn.addEventListener('click', showMe);
   document.getElementById('mapWrap').appendChild(locateBtn);
+
+  // 내 위치 표시. 위치는 이 기기 안에서 지도에 점을 찍는 데만 쓰고 어디로도 보내지 않는다.
+  // 다른 마커와 달리 #pinLayer 가 아니라 표지판 층 위(#mapWrap 맨 끝)에 붙인다 —
+  // 그래서 markers 자동 등록에서 빠지고, 등록 직후 따로 넣는다. 처음엔 숨겨 둔다.
+  const meMarker = document.createElement('button');
+  meMarker.className = 'me-marker';
+  meMarker.type = 'button';
+  meMarker.hidden = true;
+  meMarker.setAttribute('aria-label', '지금 내 위치 — 눌러서 가까운 곳 찾기');
+  meMarker.innerHTML = `<span class="me-pulse"></span><span class="me-dot"></span>${yuseongiFace()}`;
+  meMarker.addEventListener('click', findNearby);
+  document.getElementById('mapWrap').appendChild(meMarker);
 
   // ── 지도 확대/이동 ────────────────────────────────────────────────
   //  SVG라 확대해도 도로·하천이 흐려지지 않고 선명해진다.
@@ -1582,6 +1684,7 @@
     el.style.left = '0'; el.style.top = '0';
     return m;
   });
+  markers.push({el: meMarker, lx: 50, ly: 50, ay: -50});
 
   function applyTransform(){
     const r = mapWrap.getBoundingClientRect();
@@ -1776,10 +1879,10 @@
       lat:fac.lat, lng:fac.lng,
       layer:'facility', marker:() => pinButtons[fac.id], open:() => openFacility(fac),
     })),
-    ...SCHOOLS.map((sc, i) => ({
-      name:sc.name, meta:SCHOOL_LABEL[sc.lv], color:SCHOOL_COLOR[sc.lv],
-      lat:sc.lat, lng:sc.lng,
-      layer:sc.lv, marker:() => schoolButtons[i].el, open:() => openSchool(sc),
+    ...PLACES.map((p, i) => ({
+      name:p.name, meta:p.sub, color:PLACE_KIND[p.k].color,
+      lat:p.lat, lng:p.lng,
+      layer:p.k, marker:() => placeButtons[i], open:() => openPlace(p),
     })),
     ...GUARDS.map((g, i) => ({
       name:g.name, meta:'아동안전지킴이집', color:GUARD_COLOR,
@@ -1900,6 +2003,65 @@
     });
   }
 
+  // 지도 투영식 — 시설 좌표를 만들 때 쓴 것과 같은 1차식(CLAUDE.md 참고)
+  const PROJ = {ax:7749.596962836136, bx:-985977.842867581, ay:-9593.514515251665, by:350300.3263948989};
+  const toMapPct = (lat, lng) => ({
+    x: (PROJ.ax * lng + PROJ.bx - BASE_VB[0]) / BASE_VB[2] * 100,
+    y: (PROJ.ay * lat + PROJ.by - BASE_VB[1]) / BASE_VB[3] * 100,
+  });
+
+  let meWatch = null;
+  // 지도 범위 안이면 유성이를 그 자리에 세우고 true, 밖이면 숨기고 false.
+  function placeMe(lat, lng){
+    const p = toMapPct(lat, lng);
+    const mk = markers.find(m => m.el === meMarker);
+    if(!(p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100)){
+      meMarker.hidden = true;
+      return false;
+    }
+    mk.lx = p.x; mk.ly = p.y;
+    meMarker.hidden = false;
+    applyTransform();
+    return true;
+  }
+  // 한 번 위치를 잡으면 걸어가는 대로 따라 움직이게 계속 지켜본다(화면은 따라가지 않음).
+  function startWatch(){
+    if(meWatch !== null || !navigator.geolocation) return;
+    meWatch = navigator.geolocation.watchPosition(
+      pos => placeMe(pos.coords.latitude, pos.coords.longitude),
+      () => {},
+      {enableHighAccuracy:true, maximumAge:15000}
+    );
+  }
+  function locateError(err){
+    let msg = '위치를 확인할 수 없어요. 잠시 후 다시 시도해 주세요.';
+    if(err.code === err.PERMISSION_DENIED) msg = '위치 권한이 꺼져 있어요. 브라우저 설정에서 이 페이지의 위치 접근을 허용해 주세요.';
+    else if(err.code === err.TIMEOUT) msg = '위치 확인이 너무 오래 걸려요. 다시 시도해 주세요.';
+    return msg;
+  }
+
+  function showMe(){
+    if(!navigator.geolocation){
+      showLocateMessage('이 브라우저에서는 위치 확인을 지원하지 않아요.', false, '내 위치 보기');
+      return;
+    }
+    setFinding(true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setFinding(false);
+        if(placeMe(pos.coords.latitude, pos.coords.longitude)){
+          bringIntoView(meMarker);
+          meMarker.scrollIntoView({behavior:'smooth', block:'center'});
+          startWatch();
+        } else {
+          showLocateMessage('지금 있는 곳은 이 지도 밖이에요. 유성구 근처에 오면 유성이가 내 자리를 알려 줄게요.', false, '내 위치 보기');
+        }
+      },
+      err => { setFinding(false); showLocateMessage(locateError(err), false, '내 위치 보기'); },
+      {enableHighAccuracy:true, timeout:10000, maximumAge:60000}
+    );
+  }
+
   function findNearby(){
     if(!navigator.geolocation){
       showLocateMessage('이 브라우저에서는 위치 확인을 지원하지 않아요.');
@@ -1910,23 +2072,18 @@
     navigator.geolocation.getCurrentPosition(
       pos => {
         setFinding(false);
+        if(placeMe(pos.coords.latitude, pos.coords.longitude)) startWatch();
         showNearbyList(pos.coords.latitude, pos.coords.longitude);
       },
-      err => {
-        setFinding(false);
-        let msg = '위치를 확인할 수 없어요. 잠시 후 다시 시도해 주세요.';
-        if(err.code === err.PERMISSION_DENIED) msg = '위치 권한이 꺼져 있어요. 브라우저 설정에서 이 페이지의 위치 접근을 허용해 주세요.';
-        else if(err.code === err.TIMEOUT) msg = '위치 확인이 너무 오래 걸려요. 다시 시도해 주세요.';
-        showLocateMessage(msg);
-      },
+      err => { setFinding(false); showLocateMessage(locateError(err)); },
       {enableHighAccuracy:true, timeout:10000, maximumAge:60000}
     );
   }
 
-  function showLocateMessage(msg, loading){
+  function showLocateMessage(msg, loading, title = '가까운 시설 찾기'){
     modalInner.innerHTML = `
       <span class="modal-tag" style="background:var(--accent-green)">내 위치</span>
-      <h3>가까운 시설 찾기</h3>
+      <h3>${title}</h3>
       ${loading
         ? `<div class="locate-status">${locateSvg()}<span>${msg}</span></div>`
         : `<p>${msg}</p>`}
@@ -1945,13 +2102,13 @@
         dist:haversine(lat, lng, fac.lat, fac.lng),
       }));
     }
-    SCHOOLS.forEach((sc, i) => {
-      if(!layerOn(sc.lv)) return;
+    PLACES.forEach((p, i) => {
+      if(!layerOn(p.k)) return;
       pool.push({
-        key:'s:'+i,
-        badge:`<span class="legend-num" style="background:${SCHOOL_COLOR[sc.lv]}">${sc.lv}</span>`,
-        name:sc.name, meta:SCHOOL_LABEL[sc.lv],
-        dist:haversine(lat, lng, sc.lat, sc.lng),
+        key:'p:'+i,
+        badge:`<span class="legend-num" style="background:${PLACE_KIND[p.k].color}">${PLACE_KIND[p.k].label[0]}</span>`,
+        name:esc(p.name), meta:esc(p.sub),
+        dist:haversine(lat, lng, p.lat, p.lng),
       });
     });
 
@@ -1965,7 +2122,7 @@
     }
 
     if(!pool.length){
-      showLocateMessage('지금 지도에 켜 둔 항목이 없어요. 위쪽 버튼으로 청소년시설·학교·지킴이집을 켜 주세요.');
+      showLocateMessage('지금 지도에 켜 둔 항목이 없어요. 위쪽 버튼으로 보고 싶은 항목을 켜 주세요.');
       return;
     }
 
@@ -1992,7 +2149,7 @@
         closeModal();
         flashMarker(kind === 'f' ? pinButtons[id]
           : kind === 'g' ? guardButtons[Number(id)]
-          : schoolButtons[Number(id)].el);
+          : placeButtons[Number(id)]);
       });
     });
     if(!modal.open) modal.showModal();
@@ -2045,12 +2202,21 @@
       <p class="route-note">내 위치에서 출발하는 경로가 지도앱에서 열려요.</p>`;
   }
 
-  function openSchool(sc){
+  function openPlace(p){
+    const color = PLACE_KIND[p.k].color;
+    const tel = p.tel ? `<p>전화 <a href="tel:${esc(p.tel.replace(/\(.*\)/, ''))}">${esc(p.tel)}</a></p>` : '';
+    const hours = p.hours
+      ? `<p><strong>여는 시간</strong><br>${esc(p.hours).replace(/ \/ /g, '<br>')}</p>
+         <p class="route-note">시간은 바뀔 수 있어요. 가기 전에 전화로 한 번 확인해요.</p>`
+      : (p.k === 'care' ? '<p class="route-note">여는 시간은 전화로 물어보세요.</p>' : '');
     modalInner.innerHTML = `
-      <span class="modal-tag" style="background:${SCHOOL_COLOR[sc.lv]}">${SCHOOL_LABEL[sc.lv]}</span>
-      <h3>${sc.name}</h3>
-      <p>지도 위 점은 실제 위치를 섬 그림에 맞춰 옮긴 자리예요. 겹치는 학교끼리는 조금씩 떨어뜨려 놨어요.</p>
-      ${routeLinks(sc.name, sc.lat, sc.lng)}
+      <span class="modal-tag" style="background:${color}">${esc(p.sub)}</span>
+      <h3>${esc(p.name)}</h3>
+      ${p.addr ? `<div class="addr">${esc(p.addr)}</div>` : ''}
+      ${p.desc ? `<p>${esc(p.desc)}</p>` : ''}
+      ${hours}
+      ${tel}
+      ${routeLinks(p.name, p.lat, p.lng)}
       <button class="modal-close" id="closeBtn">닫기</button>`;
     bindClose();
     modal.showModal();
@@ -2065,18 +2231,6 @@
       <p>${esc(g.addr)}</p>
       ${tel}
       ${routeLinks(g.name, g.lat, g.lng)}
-      <button class="modal-close" id="closeBtn">닫기</button>`;
-    bindClose();
-    modal.showModal();
-  }
-
-  function openChest(ch){
-    modalInner.innerHTML = `
-      <span class="modal-tag" style="background:var(--gold-dark)">급식카드 보물상자</span>
-      <h3>${ch.label}</h3>
-      <p>급식카드(아이누리카드)는 <strong>편의점이랑 거의 모든 식당</strong>에서 쓸 수 있어요.</p>
-      <p>가게 문에 <strong>BC카드 스티커</strong>가 붙어 있으면 거기서 쓸 수 있다는 뜻이에요. CU·GS25·세븐일레븐은 다 돼요.</p>
-      <p class="route-note">대전에서 쓸 수 있는 식당만 23,992곳이에요 (2025년 기준).</p>
       <button class="modal-close" id="closeBtn">닫기</button>`;
     bindClose();
     modal.showModal();
