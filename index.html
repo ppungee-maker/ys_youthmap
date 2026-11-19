@@ -1107,17 +1107,23 @@
 <script>
   const FACILITIES = [
     {id:'f2', num:1, name:'구즉청소년문화의집', cat:'문화의집', dong:'봉산동(구즉동)', region:5,
-      left:70.7, top:31.66, lat:36.4446094, lng:127.3839063, desc:'VR체험실, 댄스연습실, 미디어실을 갖춘 테크노밸리의 청소년 아지트예요.'},
+      left:70.7, top:31.66, lat:36.4446094, lng:127.3839063, addr:'유성구 금남구즉로 1428(봉산동)', tel:'070-4908-6888', hours:'화~토 09:00~19:00 / 일·월·공휴일 휴관',
+      desc:'VR체험실, 댄스연습실, 미디어실을 갖춘 테크노밸리의 청소년 아지트예요.'},
     {id:'f5', num:2, name:'유성구청소년수련관', cat:'수련관', dong:'죽동(온천2동)', region:2,
-      left:46.49, top:49.64, lat:36.3806509, lng:127.3238100, desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
+      left:46.49, top:49.64, lat:36.3806509, lng:127.3238100, addr:'유성구 북유성대로 158', tel:'042-820-8900', hours:'화~토 09:00~21:00 / 일 09:00~18:00 / 월 휴관',
+      desc:'공연장(346석)·댄스연습실·밴드실·체육관을 갖춘 유성구 청소년 활동의 본부예요.'},
     {id:'f6', num:3, name:'유성구청소년상담복지센터', cat:'상담복지', dong:'죽동(온천2동)', region:2,
       left:42.14, top:52.13, lat:36.3804952, lng:127.3236602, desc:'고민이 있을 때 또래상담사와 이야기 나눌 수 있는 상담 공간이에요.'},
     {id:'f7', num:4, name:'유성구미래교육지원센터', cat:'진로체험', dong:'죽동(온천2동)', region:2,
       left:50.84, top:52.11, lat:36.3806000, lng:127.3237300, desc:'2026년 새단장하면서 대덕특구 연구기관과 함께 AI·디지털 역량 중심 진로체험 프로그램으로 확대됐어요.'},
     {id:'f8', num:5, name:'학교밖청소년지원센터 꿈드림', cat:'학교밖지원', dong:'장대동(온천2동)', region:2,
-      left:57.4, top:55.6, lat:36.3631103, lng:127.3377119, desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
+      left:57.4, top:55.6, lat:36.3631103, lng:127.3377119, addr:'유성구 유성대로 798-1(장대동), 메디칼벤처센터 2층', tel:'042-826-1388', hours:'월~금 09:00~18:00 / 주말·공휴일 휴무',
+      desc:'학교를 그만둔 청소년의 자립과 배움을 돕는 지원센터예요.'},
+    // 장대: 실제 자리(유성대로 780)는 온천 표지판 바로 밑이라 핀이 통째로 가려진다.
+    // 핀만 남쪽으로 약 450m 비켜 그리고(left/top), 길찾기용 lat/lng 는 실제 주소 그대로 둔다.
     {id:'f9', num:6, name:'장대청소년문화의집', cat:'문화의집', dong:'장대동(온천2동)', region:2,
-      left:51.68, top:57.21, lat:36.3578825, lng:127.3366933, desc:'동아리 활동과 문화 프로그램이 가득한 작은 아지트예요.'},
+      left:51.68, top:57.21, lat:36.3621955, lng:127.3370854, addr:'유성구 유성대로 780', tel:'042-825-1321', 
+      desc:'동아리 활동과 문화 프로그램이 가득한 작은 아지트예요.'},
   ];
 
   // 공원·도서관·공공시설·돌봄시설. 출처와 좌표 잡는 법은 CLAUDE.md 'PLACES' 항목 참고.
@@ -2182,8 +2188,9 @@
     modalInner.innerHTML = `
       <span class="modal-tag" style="background:${REGION_VAR(fac.region)}">${fac.cat}</span>
       <h3>${fac.name}</h3>
-      <div class="addr">${fac.dong}</div>
+      <div class="addr">${fac.addr ? esc(fac.addr) + ' · ' : ''}${fac.dong}</div>
       <p>${fac.desc}</p>
+      ${hoursTel(fac, !!fac.tel)}
       ${routeLinks(fac.name, fac.lat, fac.lng)}
       <button class="modal-close" id="closeBtn">닫기</button>`;
     bindClose();
@@ -2202,20 +2209,25 @@
       <p class="route-note">내 위치에서 출발하는 경로가 지도앱에서 열려요.</p>`;
   }
 
-  function openPlace(p){
-    const color = PLACE_KIND[p.k].color;
+  // 여는 시간·전화 — 시설(핀)과 장소(점) 상세 창이 같이 쓴다.
+  // askHours: 시간 정보가 없을 때 '전화로 물어보세요'를 붙일지.
+  function hoursTel(p, askHours){
     const tel = p.tel ? `<p>전화 <a href="tel:${esc(p.tel.replace(/\(.*\)/, ''))}">${esc(p.tel)}</a></p>` : '';
     const hours = p.hours
       ? `<p><strong>여는 시간</strong><br>${esc(p.hours).replace(/ \/ /g, '<br>')}</p>
          <p class="route-note">시간은 바뀔 수 있어요. 가기 전에 전화로 한 번 확인해요.</p>`
-      : (p.k === 'care' ? '<p class="route-note">여는 시간은 전화로 물어보세요.</p>' : '');
+      : (askHours ? '<p class="route-note">여는 시간은 전화로 물어보세요.</p>' : '');
+    return hours + tel;
+  }
+
+  function openPlace(p){
+    const color = PLACE_KIND[p.k].color;
     modalInner.innerHTML = `
       <span class="modal-tag" style="background:${color}">${esc(p.sub)}</span>
       <h3>${esc(p.name)}</h3>
       ${p.addr ? `<div class="addr">${esc(p.addr)}</div>` : ''}
       ${p.desc ? `<p>${esc(p.desc)}</p>` : ''}
-      ${hours}
-      ${tel}
+      ${hoursTel(p, p.k === 'care')}
       ${routeLinks(p.name, p.lat, p.lng)}
       <button class="modal-close" id="closeBtn">닫기</button>`;
     bindClose();
