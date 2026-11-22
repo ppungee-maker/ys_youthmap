@@ -199,6 +199,55 @@
     -webkit-tap-highlight-color:transparent;
   }
   .big-find:hover{filter:brightness(1.06);}
+
+  /* 도장 모으기 */
+  .stamp-card{
+    display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;
+    column-gap:12px;row-gap:7px;align-items:center;
+    width:100%;margin:-4px 0 14px;padding:11px 16px 12px;
+    border:2px solid #E9C9A6;border-radius:20px;
+    background:#FFF6EA;color:var(--ink);text-align:left;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .stamp-card:focus-visible{outline:3px solid var(--accent-coral);outline-offset:2px;}
+  .sc-seal{grid-row:1 / span 2;width:38px;height:38px;}
+  .sc-seal svg{width:100%;height:100%;display:block;}
+  .sc-text{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+  .sc-text b{font-family:'Jua',sans-serif;font-size:16px;font-weight:400;}
+  .sc-text small{font-family:'Jua',sans-serif;font-size:15px;color:#C2453A;}
+  .sc-bar{height:9px;border-radius:999px;background:#F1DFC8;overflow:hidden;}
+  .sc-bar i{display:block;height:100%;width:0;border-radius:999px;background:#D9473A;transition:width .6s ease;}
+
+  .stamp-board{display:grid;gap:14px;margin-top:6px;}
+  .stamp-board h4{margin:0 0 6px;font-family:'Jua',sans-serif;font-weight:400;font-size:15px;color:var(--ink-soft);}
+  .stamp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;}
+  .stamp-cell{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    min-width:0;padding:8px 4px 7px;border:2px dashed #E3D6C4;border-radius:16px;
+    background:#FFFDF8;color:var(--ink-soft);cursor:pointer;font-family:inherit;
+  }
+  .stamp-cell .slot{width:46px;height:46px;border-radius:50%;border:2px dashed #E3D6C4;display:flex;align-items:center;justify-content:center;color:#D8C9B5;font-size:20px;}
+  .stamp-cell .nm{font-size:11.5px;line-height:1.3;text-align:center;word-break:normal;overflow-wrap:anywhere;}
+  .stamp-cell .dt{font-size:10.5px;color:#C2453A;font-weight:700;}
+  .stamp-cell.on{border-style:solid;border-color:#F0C9BF;background:#FFF4F1;color:var(--ink);}
+  .stamp-cell.on .slot{border:0;}
+  .stamp-cell.on .slot svg{width:46px;height:46px;transform:rotate(-12deg);}
+
+  .stamp-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin:4px 0 6px;}
+  .stamp-hero .stamp-face{width:120px;height:auto;filter:drop-shadow(0 4px 4px rgba(54,64,45,.25));}
+  .stamp-hero .big-seal{width:92px;height:92px;margin-top:-26px;margin-left:110px;animation:stampIn .5s cubic-bezier(.2,1.6,.4,1) both;}
+  @keyframes stampIn{from{transform:scale(2.4) rotate(-30deg);opacity:0;}to{transform:scale(1) rotate(-12deg);opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ .stamp-hero .big-seal{animation:none;transform:rotate(-12deg);} }
+  .stamp-hero h3{margin:6px 0 0;}
+
+  .pin.stamped::after{
+    content:'';position:absolute;left:2px;top:4px;width:15px;height:15px;border-radius:50%;
+    background:#D9473A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.4l2.6 2.6L12 5.6' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;
+    box-shadow:0 0 0 2px #FFFFFF;
+  }
+  .place-dot.stamped i{box-shadow:0 0 0 2.5px #FFFFFF, 0 0 0 5px #D9473A, 0 2px 3px rgba(54,64,45,.4);}
+  .stamp-line{font-size:13.5px;font-weight:700;margin:4px 0 6px;color:#C2453A;}
+  .stamp-line.todo{color:var(--ink-soft);font-weight:400;}
   .big-find:focus-visible{outline:3px solid var(--accent-coral);outline-offset:3px;}
   .big-find .bf-icon{
     flex:none;
@@ -814,6 +863,12 @@
     <button class="big-find" id="bigFind" type="button">
       <span class="bf-icon" aria-hidden="true"></span>
       <span class="bf-text"><b>내 주변 보물 찾기</b><small>지금 내 자리에서 가까운 곳부터 보여줄게요</small></span>
+    </button>
+
+    <button class="stamp-card" id="stampCard" type="button">
+      <span class="sc-seal" aria-hidden="true"></span>
+      <span class="sc-text"><b>내 도장판</b><small id="stampCount">0 / 0</small></span>
+      <span class="sc-bar" aria-hidden="true"><i id="stampBar"></i></span>
     </button>
 
     <div class="chip-row" id="chipRow" role="group" aria-label="지도에 표시할 항목 고르기"></div>
@@ -2067,7 +2122,8 @@
   function startWatch(){
     if(meWatch !== null || !navigator.geolocation) return;
     meWatch = navigator.geolocation.watchPosition(
-      pos => placeMe(pos.coords.latitude, pos.coords.longitude),
+      pos => { placeMe(pos.coords.latitude, pos.coords.longitude);
+               checkStamps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy); },
       () => {},
       {enableHighAccuracy:true, maximumAge:15000}
     );
@@ -2089,6 +2145,7 @@
       pos => {
         setFinding(false);
         if(placeMe(pos.coords.latitude, pos.coords.longitude)){
+          if(checkStamps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy)){ startWatch(); return; }
           bringIntoView(meMarker);
           meMarker.scrollIntoView({behavior:'smooth', block:'center'});
           startWatch();
@@ -2112,6 +2169,7 @@
       pos => {
         setFinding(false);
         if(placeMe(pos.coords.latitude, pos.coords.longitude)) startWatch();
+        if(checkStamps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy)) return;
         showNearbyList(pos.coords.latitude, pos.coords.longitude);
       },
       err => { setFinding(false); showLocateMessage(locateError(err)); },
@@ -2222,6 +2280,7 @@
       <span class="modal-tag" style="background:${REGION_VAR(fac.region)}">${fac.cat}</span>
       <h3>${fac.name}</h3>
       <div class="addr">${fac.addr ? esc(fac.addr) + ' · ' : ''}${fac.dong}</div>
+      ${stampLine('f:' + fac.id)}
       <p>${fac.desc}</p>
       ${hoursTel(fac, !!fac.tel)}
       ${routeLinks(fac.name, fac.lat, fac.lng)}
@@ -2264,6 +2323,7 @@
       <span class="modal-tag" style="background:${color}">${esc(p.sub)}</span>
       <h3>${esc(p.name)}</h3>
       ${p.addr ? `<div class="addr">${esc(p.addr)}</div>` : ''}
+      ${stampLine('p:' + p.name)}
       ${p.desc ? `<p>${esc(p.desc)}</p>` : ''}
       ${hoursTel(p, p.k === 'care')}
       ${routeLinks(p.name, p.lat, p.lng)}
@@ -2674,6 +2734,141 @@
       .map(n => ({id:String(n.id), date:String(n.date || ''), title:String(n.title), body:String(n.body || '')}));
     refreshBadge();
   }
+
+  // ── 도장 모으기 ────────────────────────────────────────────────
+  //  실제로 그 장소 가까이(STAMP_RADIUS 안) 가면 도장이 찍힌다. 위치는 '내 위치'(과녁 버튼)나
+  //  '내 주변 보물 찾기'로 받은 것을 그대로 쓰고, 어디로도 보내지 않는다. 기록은 이 기기에만.
+  const STAMP_RADIUS = 100;          // m — GPS 오차와 지도 좌표 오차(수십 m)를 감안
+  const STAMP_MAX_ACCURACY = 150;    // m — 이보다 부정확한 위치로는 찍지 않는다
+  const STAMP_GROUPS = ['청소년시설', '도서관', '과학관·박물관'];
+  const STAMP_SPOTS = [
+    ...FACILITIES.map(f => ({key:'f:' + f.id, name:f.name, group:'청소년시설', layer:'facility',
+      lat:f.lat, lng:f.lng, marker:() => pinButtons[f.id], open:() => openFacility(f)})),
+    ...PLACES.map((p, i) => ({p, i}))
+      .filter(({p}) => p.k === 'library' || p.sub === '과학관·박물관')
+      .map(({p, i}) => ({key:'p:' + p.name, name:p.name, group:p.k === 'library' ? '도서관' : '과학관·박물관',
+        layer:p.k, lat:p.lat, lng:p.lng, marker:() => placeButtons[i], open:() => openPlace(p)})),
+  ];
+  const spotByKey = key => STAMP_SPOTS.find(s => s.key === key);
+
+  function stampSeal(){
+    return `<svg viewBox="0 0 48 48" aria-hidden="true">
+      <circle cx="24" cy="24" r="21" fill="none" stroke="#D9473A" stroke-width="3.2"/>
+      <circle cx="24" cy="24" r="16.5" fill="none" stroke="#D9473A" stroke-width="1.4" stroke-dasharray="2.6 2.2"/>
+      <path d="M24 12.5l3.2 6.6 7.2 1-5.2 5 1.3 7.2L24 28.9l-6.5 3.4 1.3-7.2-5.2-5 7.2-1z" fill="#D9473A"/>
+    </svg>`;
+  }
+
+  function getStamps(){
+    try{ return JSON.parse(localStorage.getItem('yuseong_stamps') || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setStamps(s){
+    try{ localStorage.setItem('yuseong_stamps', JSON.stringify(s)); }catch(e){}
+  }
+  const todayStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  function refreshStamps(){
+    const s = getStamps();
+    const got = STAMP_SPOTS.filter(sp => s[sp.key]).length;
+    document.getElementById('stampCount').textContent = `${got} / ${STAMP_SPOTS.length}`;
+    document.getElementById('stampBar').style.width = (got / STAMP_SPOTS.length * 100) + '%';
+    STAMP_SPOTS.forEach(sp => { const el = sp.marker(); if(el) el.classList.toggle('stamped', !!s[sp.key]); });
+  }
+
+  // 상세 창에 넣는 한 줄 — 도장 장소가 아니면 빈 문자열
+  function stampLine(key){
+    if(!spotByKey(key)) return '';
+    const d = getStamps()[key];
+    return d ? `<p class="stamp-line">★ 도장 받았어요 (${esc(d)})</p>`
+             : '<p class="stamp-line todo">☆ 이곳에 가서 내 위치를 켜면 도장을 받아요</p>';
+  }
+
+  // 위치를 받을 때마다 부른다. 새로 찍힌 도장이 있으면 축하 창을 띄우고 true.
+  function checkStamps(lat, lng, accuracy){
+    if(accuracy && accuracy > STAMP_MAX_ACCURACY) return false;
+    const s = getStamps();
+    const fresh = STAMP_SPOTS.filter(sp => !s[sp.key] && haversine(lat, lng, sp.lat, sp.lng) <= STAMP_RADIUS);
+    if(!fresh.length) return false;
+    fresh.forEach(sp => { s[sp.key] = todayStr(); });
+    setStamps(s);
+    refreshStamps();
+    celebrate(fresh);
+    return true;
+  }
+
+  function celebrate(fresh){
+    const got = STAMP_SPOTS.filter(sp => getStamps()[sp.key]).length;
+    const total = STAMP_SPOTS.length;
+    const msg = got === total ? '도장판을 다 채웠어요! 유성구 보물왕이에요 👑'
+      : got === 1 ? '첫 도장이에요! 다른 보물도 찾아가 볼까요?'
+      : got % 5 === 0 ? `벌써 ${got}개! 정말 대단해요`
+      : `${total - got}곳 남았어요`;
+    modalInner.innerHTML = `
+      <div class="stamp-hero">
+        ${yuseongiSmile()}
+        <span class="big-seal">${stampSeal()}</span>
+        <h3>도장 쾅!</h3>
+        <p><strong>${fresh.map(sp => esc(sp.name)).join(', ')}</strong></p>
+        <p>${got} / ${total} · ${msg}</p>
+      </div>
+      <button class="admin-submit" id="toBoard" type="button" style="width:100%">내 도장판 보기</button>
+      <button class="modal-close" id="closeBtn">닫기</button>`;
+    bindClose();
+    document.getElementById('toBoard').addEventListener('click', openStampBoard);
+    if(!modal.open) modal.showModal();
+  }
+
+  function openStampBoard(){
+    const s = getStamps();
+    const got = STAMP_SPOTS.filter(sp => s[sp.key]).length;
+    const groups = STAMP_GROUPS.map(g => {
+      const cells = STAMP_SPOTS.filter(sp => sp.group === g).map(sp => {
+        const d = s[sp.key];
+        return `<button class="stamp-cell${d ? ' on' : ''}" type="button" data-key="${esc(sp.key)}">
+          <span class="slot">${d ? stampSeal() : '?'}</span>
+          <span class="nm">${esc(sp.name)}</span>
+          ${d ? `<span class="dt">${esc(d)}</span>` : ''}
+        </button>`;
+      }).join('');
+      return `<div><h4>${g}</h4><div class="stamp-grid">${cells}</div></div>`;
+    }).join('');
+    modalInner.innerHTML = `
+      <span class="modal-tag" style="background:#D9473A">도장 모으기</span>
+      <h3>내 도장판 ${got} / ${STAMP_SPOTS.length}</h3>
+      <p>장소에 직접 가서 지도의 <strong>과녁 버튼(내 위치)</strong>을 누르면 도장이 찍혀요. 칸을 누르면 지도에서 어디인지 보여줘요.</p>
+      <div class="stamp-board">${groups}</div>
+      <button class="modal-close" id="closeBtn">닫기</button>`;
+    bindClose();
+    modalInner.querySelectorAll('.stamp-cell').forEach(b =>
+      b.addEventListener('click', ()=>showSpot(spotByKey(b.dataset.key))));
+    if(!modal.open) modal.showModal();
+  }
+
+  // 도장판 칸 → 지도에서 그 장소 보여주기 (꺼진 칩이면 켠다)
+  function showSpot(sp){
+    const layer = LAYERS.find(l => l.id === sp.layer);
+    if(layer && !layer.on){
+      layer.on = true;
+      chipRow.querySelectorAll('.chip').forEach((chip, i)=> chip.setAttribute('aria-pressed', String(LAYERS[i].on)));
+      applyLayers();
+      saveLayerState();
+    }
+    closeModal();
+    flashMarker(sp.marker());
+  }
+
+  function yuseongiSmile(){
+    // 「유성이 매뉴얼북」 BS09 '눈 웃음' 표정 — 모양·색 그대로(매뉴얼 규정)
+    return `<svg class="stamp-face" aria-hidden="true" viewBox="0 0 213.7 170.8"><path fill="#F3CFBC" d="M160.5 100.8C160.5 100.8 161.4 92 170.4 92.2C179.4 92.4 183.6 102.4 180.9 110.1C178.2 117.8 168.1 119.5 168.1 119.5"/><path fill="#E5BCAA" d="M171.9 112.9C172.3 112.5 172.8 112.1 173.2 111.5C173.2 111.5 177.8 106.4 174.3 99.9C173.2 97.9 170.8 96.9 168.7 97.6C167.4 98 166.1 99.1 165.6 101.6L167.8 112.2C168.8 113.5 170.6 113.9 171.9 112.9"/><path fill="#D69383" d="M165.5 104.2C165.2 104.2 164.9 104 164.9 103.7C164.8 101 165.5 99.1 166.9 98C168.7 96.4 171.2 96.8 171.3 96.9C171.6 96.9 171.8 97.2 171.8 97.5C171.7 97.9 171.4 98.1 171.1 98C171.1 98 169 97.6 167.6 98.9C166.5 99.8 166 101.4 166.1 103.6C166.1 103.9 165.8 104.2 165.5 104.2L165.5 104.2"/><path fill="#F3CFBC" d="M51.7 100.8C51.7 100.8 50.8 92 41.8 92.2C32.8 92.4 28.6 102.4 31.3 110.1C34 117.8 44.1 119.5 44.1 119.5"/><path fill="#E5BCAA" d="M40.3 112.9C39.9 112.5 39.4 112.1 39 111.5C39 111.5 34.4 106.4 37.9 99.9C39 97.9 41.4 96.9 43.5 97.6C44.9 98 46.1 99.1 46.6 101.6L44.4 112.2C43.4 113.5 41.6 113.9 40.3 112.9"/><path fill="#D69383" d="M46.7 104.2L46.7 104.2C46.4 104.2 46.1 103.9 46.1 103.6C46.2 101.4 45.7 99.8 44.6 98.9C43.2 97.6 41.2 98 41.1 98C40.8 98.1 40.5 97.9 40.5 97.5C40.4 97.2 40.6 96.9 40.9 96.9C41 96.8 43.5 96.4 45.4 98C46.7 99.1 47.4 101 47.3 103.7C47.3 104 47 104.2 46.7 104.2"/><path fill="#F3CFBC" d="M46.1 79.6C46.1 79.6 46.2 96.3 42.2 107.7C42.2 107.7 32.8 127.2 51.2 138.8C51.2 138.8 97.6 169.3 155 142.5C155 142.5 179.4 131.4 170.4 107.9C170.4 107.9 164.6 93.4 167 76.2C167 76.2 103.1 24.4 46.1 79.6"/><path fill="#724E2C" d="M153.8 72.5C153.8 72.5 156.9 88.5 166.6 94.6C166.6 94.6 173.5 88.5 168.9 77.6C168.9 77.6 159.6 73.8 153.8 72.5"/><path fill="#724E2C" d="M57 73.6C57 73.6 56.2 89.3 46.6 95.7C46.6 95.7 40 87.7 43 78.1C43 78.1 51.2 75 57 73.6"/><path fill="#724E2C" d="M87.5 74.4C87.5 74.4 94.9 97.7 127.7 87.1C127.7 87.1 122 85.1 122.9 77.4C122.9 77.4 123.7 86.8 147.1 87.6C147.1 87.6 143.4 85.5 144.2 79.7C144.2 79.7 151.7 91.3 165.1 91.3C165.1 91.3 158.5 85.9 159.8 78.7C159.8 78.7 139.9 61.5 106.7 64.4C106.7 64.4 96.7 71.3 87.5 74.4"/><path fill="#F6F8F9" d="M165.4 58.7C165.4 58.7 132 51.5 104.9 69C104.9 69 69 90.8 42 80.5C42 80.5 31.1 47.7 51.2 31.3C51.2 31.3 81.1 2 132.5 12.6C132.5 12.6 165.5 20.7 173.9 48.5C173.9 48.5 178.2 63.9 171.7 81.3C171.7 81.3 134 65 111.4 65.3C111.4 65.3 133.5 53.1 165.4 58.7"/><path fill="#EAEBED" d="M154.5 57.4C155.4 57.4 150 57.1 146.5 57.5C135.4 58.5 123.1 59.6 113.3 64.7C112.8 64.9 112.4 65.1 111.9 65.3C134.5 65.2 171.7 81.3 171.7 81.3C174.2 74.6 175.1 68.2 175.3 62.8C171 58.1 155.4 57.4 154.5 57.4"/><path fill="#D3D4D6" d="M42.5 80.1C68.9 89.9 104.3 68.7 104.6 68.5C106.7 67.2 108.8 66 111 64.9C111 64.8 111.1 64.8 111.2 64.7C111.2 64.7 114.7 62.9 120.6 60.9C125.8 59.2 131 58.2 135.9 57.5C142.6 56.6 150.4 56.3 159 57.2C163 57.6 165.5 58.1 165.6 58.1C165.9 58.2 166.1 58.5 166 58.8C165.9 59.1 165.6 59.3 165.3 59.2C163 58.8 160.8 58.5 158.6 58.3C153.2 57.8 145.1 57.5 136 58.7C130.2 59.5 125.3 60.7 121.4 61.9C119 62.7 116.5 63.6 114.1 64.7C135.2 65.6 166.8 78.6 171.4 80.5C177.5 63.8 173.3 48.8 173.3 48.6C165.1 21.5 132.7 13.2 132.4 13.1C81.9 2.8 51.9 31.4 51.6 31.7C33 46.9 41.5 77 42.5 80.1M57.9 83.8C52.4 83.8 46.9 83 41.8 81.1C41.6 81 41.5 80.9 41.4 80.7C41.3 80.4 30.7 47.3 50.8 30.9C51.1 30.6 81.5 1.5 132.6 12C133 12.1 166 20.5 174.4 48.3C174.5 48.5 178.8 64.1 172.2 81.5C172.2 81.7 172.1 81.8 171.9 81.8C171.8 81.9 171.6 81.9 171.5 81.8C171.1 81.7 134.3 65.8 112 65.8C111.9 65.8 111.8 65.8 111.7 65.8C109.5 66.9 107.4 68.1 105.2 69.5C104.9 69.7 81.3 83.8 57.9 83.8"/><path fill="#D3D4D6" d="M39.4 62.7C39 62.7 38.8 62.4 38.8 62.1C38.8 61.8 39 61.5 39.3 61.5C39.5 61.5 52.1 61 60.3 46.1C60.4 45.8 60.8 45.7 61.1 45.9C61.4 46.1 61.5 46.4 61.3 46.7C52.8 62.1 39.5 62.7 39.4 62.7L39.4 62.7"/><path fill="#D3D4D6" d="M39.2 69.2C39 69.2 38.8 69.1 38.7 69C38.5 68.7 38.5 68.4 38.8 68.2C44.8 63 55 67.4 55.4 67.6C55.7 67.8 55.8 68.1 55.7 68.4C55.6 68.7 55.2 68.8 54.9 68.7C54.8 68.7 45 64.4 39.6 69C39.4 69.1 39.3 69.2 39.2 69.2"/><path fill="#D3D4D6" d="M135.7 29.5C135.6 29.5 135.5 29.5 135.4 29.5C110.5 19.7 93.2 28.7 93.1 28.8C92.8 28.9 92.4 28.8 92.3 28.5C92.1 28.3 92.2 27.9 92.5 27.8C92.7 27.7 110.4 18.4 135.9 28.4C136.2 28.5 136.3 28.8 136.2 29.1C136.1 29.4 135.9 29.5 135.7 29.5"/><path fill="#D3D4D6" d="M169 56.8C168.9 56.8 168.8 56.8 168.6 56.7C160.1 48.8 151.7 48.4 151.6 48.4C151.3 48.4 151 48.1 151 47.8C151 47.5 151.3 47.2 151.6 47.2C152 47.2 160.5 47.7 169.4 55.8C169.7 56 169.7 56.4 169.5 56.7C169.4 56.8 169.2 56.8 169 56.8"/><path fill="#E6AAAC" d="M74.5 124.7C74.4 131.3 68.1 136.7 60.3 136.6C52.5 136.6 46.2 131.1 46.3 124.5C46.3 117.9 52.7 112.5 60.5 112.6C68.3 112.6 74.5 118.1 74.5 124.7"/><path fill="#D18588" d="M52.6 122.3C52.4 122.3 52.2 122.2 52.1 122.1C51.9 121.8 52 121.5 52.2 121.3L55 119C55.3 118.8 55.7 118.8 55.9 119.1C56.1 119.3 56 119.7 55.8 119.9L52.9 122.2C52.8 122.3 52.7 122.3 52.6 122.3"/><path fill="#D18588" d="M54.8 124.9C54.6 124.9 54.4 124.9 54.3 124.7C54.1 124.5 54.1 124.1 54.4 123.9L60.2 119.1C60.5 118.9 60.8 118.9 61.1 119.2C61.3 119.4 61.2 119.8 61 120L55.1 124.8C55 124.9 54.9 124.9 54.8 124.9"/><path fill="#D18588" d="M59.9 124.9C59.8 124.9 59.6 124.9 59.5 124.7C59.3 124.5 59.3 124.1 59.6 123.9L63.9 120.4C64.1 120.1 64.5 120.2 64.7 120.4C64.9 120.7 64.9 121 64.6 121.2L60.3 124.8C60.2 124.9 60.1 124.9 59.9 124.9"/><path fill="#D18588" d="M63.6 125.4C63.4 125.4 63.3 125.3 63.2 125.2C63 124.9 63 124.6 63.2 124.4L66.7 121.5C67 121.3 67.4 121.3 67.6 121.6C67.8 121.8 67.7 122.2 67.5 122.4L64 125.3C63.9 125.4 63.7 125.4 63.6 125.4"/><path fill="#E6AAAC" d="M165.1 124.7C165.1 131.3 158.7 136.7 150.9 136.6C143.1 136.6 136.9 131.1 136.9 124.5C137 117.9 143.3 112.5 151.1 112.6C158.9 112.6 165.2 118.1 165.1 124.7"/><path fill="#D18588" d="M143.2 122.3C143.1 122.3 142.9 122.2 142.8 122.1C142.6 121.8 142.6 121.5 142.9 121.3L145.7 119C145.9 118.8 146.3 118.8 146.5 119.1C146.7 119.3 146.7 119.7 146.4 119.9L143.6 122.2C143.5 122.3 143.3 122.3 143.2 122.3"/><path fill="#D18588" d="M145.4 124.9C145.2 124.9 145.1 124.9 145 124.7C144.7 124.5 144.8 124.1 145 123.9L150.9 119.1C151.1 118.9 151.5 118.9 151.7 119.2C151.9 119.4 151.9 119.8 151.6 120L145.8 124.8C145.7 124.9 145.5 124.9 145.4 124.9"/><path fill="#D18588" d="M150.6 124.9C150.4 124.9 150.3 124.9 150.1 124.7C149.9 124.5 150 124.1 150.2 123.9L154.5 120.4C154.8 120.1 155.2 120.2 155.4 120.4C155.6 120.7 155.5 121 155.3 121.2L151 124.8C150.9 124.9 150.7 124.9 150.6 124.9"/><path fill="#D18588" d="M154.3 125.4C154.1 125.4 153.9 125.3 153.8 125.2C153.6 124.9 153.6 124.6 153.9 124.4L157.4 121.5C157.6 121.3 158 121.3 158.2 121.6C158.4 121.8 158.4 122.2 158.1 122.4L154.6 125.3C154.5 125.4 154.4 125.4 154.3 125.4"/><path fill="#D69383" d="M102.7 120.5C102.6 120.5 102.5 120.5 102.4 120.4C102.1 120.2 102 119.9 102.2 119.6C102.2 119.5 103.5 117.2 105.6 117.1C107 117 108.2 117.8 109.5 119.5C109.6 119.8 109.6 120.2 109.3 120.4C109 120.5 108.7 120.5 108.5 120.2C107.5 118.8 106.6 118.2 105.7 118.2C104.2 118.3 103.2 120.2 103.2 120.2C103.1 120.4 102.9 120.5 102.7 120.5"/><path fill="#E5BCAA" d="M111.5 144.6C111.8 144.2 111.2 143.8 110.5 143.9C109.1 144.3 107.4 144.4 105.9 144.4C104.3 144.4 102.6 144.3 101.3 143.9C100.6 143.8 100 144.2 100.3 144.6C102.3 146.8 106.7 150.6 111.5 144.6"/><path fill="#F6F8F9" d="M50.6 46.7C50.6 46.7 52.3 26.1 29.8 30.7C29.8 30.7 23.7 32.7 21 37.8C21 37.8 22.7 37.3 25.2 39.5C25.2 39.5 19.9 34.8 14.5 41.1C14.5 41.1 2.1 58.9 11.2 78.7C11.2 78.7 14.5 87.4 25.2 84.6C25.2 84.6 20.3 85.8 16.7 84.6C16.7 84.6 17.9 94.7 29.8 95.6C29.8 95.6 53.1 98.7 49.7 72.6"/><path fill="#EAEBED" d="M38.3 79.6C33.6 79.6 29.4 77.9 26.1 75.2C24.9 74.3 23.3 73.9 21.9 74.4C20.3 74.9 18 75.5 15.5 75.6C13.5 75.6 11.5 75.3 9.6 74.6C10 76 10.5 77.3 11.2 78.7C11.2 78.7 13.6 84.9 20.9 85.1C19.5 85.1 18 85 16.7 84.6C16.7 84.6 17.9 94.7 29.8 95.6C29.8 95.6 51.2 98.5 50 75.7C46.6 78.1 42.5 79.6 38.3 79.6"/><path fill="#D3D4D6" d="M32.1 96.3C30.7 96.3 29.8 96.2 29.7 96.1C17.5 95.2 16.1 84.8 16.1 84.6C16.1 84.6 16.1 84.6 16.1 84.6C12.1 82.7 10.7 79 10.6 78.9C1.5 59 13.9 41 14 40.8C15.9 38.6 18 37.4 20.2 37.3C20.3 37.3 20.5 37.3 20.6 37.3C23.5 32.2 29.4 30.2 29.7 30.1C36.9 28.6 42.5 29.6 46.2 32.9C51.9 37.9 51.2 46.4 51.2 46.8C51.2 47.1 50.9 47.3 50.6 47.3C50.3 47.3 50 47 50.1 46.7C50.1 46.6 50.7 38.4 45.5 33.7C42 30.7 36.8 29.8 30 31.2C30 31.2 24.8 33 22 37.2C22.8 37.4 24.1 37.8 25.6 39C25.6 39.1 25.6 39.1 25.6 39.1C25.9 39.3 25.9 39.7 25.7 39.9C25.5 40.2 25.1 40.2 24.9 40C24.9 40 24.9 40 24.8 39.9C24.6 39.7 22.7 38.2 20.2 38.4C18.4 38.6 16.6 39.6 14.9 41.5C14.8 41.6 2.8 59.2 11.7 78.5C11.8 78.8 14 84.1 20.3 84.5C22.8 84.5 25 84 25 84C25.4 83.9 25.7 84.1 25.7 84.4C25.8 84.8 25.6 85.1 25.3 85.2C23.5 85.6 21.9 85.8 20.5 85.7C19.5 85.7 18.4 85.6 17.4 85.4C18 87.8 20.5 94.3 29.8 95C29.9 95 39.2 96.2 44.9 90.5C48.8 86.7 50.2 80.7 49.1 72.7C49.1 72.4 49.3 72.1 49.6 72C49.9 72 50.2 72.2 50.3 72.5C51.4 80.9 49.8 87.3 45.8 91.3C41.5 95.6 35.5 96.3 32.1 96.3"/><path fill="#F6F8F9" d="M163.2 46.9C163.2 46.9 161.5 26.3 184 30.9C184 30.9 190.1 32.9 192.8 38C192.8 38 191.1 37.6 188.6 39.7C188.6 39.7 193.9 35 199.3 41.4C199.3 41.4 211.7 59.1 202.5 78.9C202.5 78.9 199.2 87.5 188.5 84.7C188.5 84.7 193.3 85.9 197 84.7C197 84.7 195.8 94.8 183.9 95.7C183.9 95.7 160.6 98.8 164.1 72.7"/><path fill="#EAEBED" d="M175.4 79.7C180.1 79.7 184.3 78.1 187.6 75.4C188.8 74.4 190.4 74.1 191.8 74.6C193.4 75.1 195.7 75.7 198.1 75.8C200.2 75.8 202.2 75.5 204.1 74.8C203.7 76.2 203.1 77.5 202.5 78.9C202.5 78.9 200.1 85.1 192.8 85.3C194.2 85.3 195.7 85.2 197 84.7C197 84.7 195.8 94.8 183.9 95.7C183.9 95.7 162.5 98.5 163.8 75.8C167.2 78.2 171.2 79.7 175.4 79.7"/><path fill="#D3D4D6" d="M181.6 96.4C178.3 96.4 172.2 95.7 167.9 91.4C163.9 87.3 162.4 81 163.5 72.6C163.5 72.3 163.8 72.1 164.1 72.1C164.5 72.2 164.7 72.5 164.6 72.8C163.6 80.8 165 86.8 168.8 90.6C174.4 96.3 183.7 95.1 183.8 95.1C193.2 94.4 195.6 88 196.2 85.6C195.2 85.8 194.2 85.9 193.2 85.9L193.2 85.9C191.7 85.9 190.1 85.8 188.3 85.3C188 85.2 187.8 84.9 187.9 84.6C188 84.3 188.3 84.1 188.6 84.2C188.7 84.2 190.9 84.7 193.4 84.7C199.7 84.3 201.8 79 202 78.7C210.9 59.4 198.9 41.9 198.8 41.7C197.2 39.8 195.4 38.8 193.6 38.7C191.1 38.5 189.2 40 189 40.2C189 40.2 188.9 40.2 188.9 40.2C188.7 40.4 188.3 40.4 188.1 40.1C187.9 39.9 187.9 39.5 188.2 39.3C188.2 39.3 188.2 39.3 188.2 39.2C189.7 38 191 37.6 191.8 37.5C189 33.2 183.9 31.4 183.8 31.4C177.1 30 171.8 30.9 168.4 33.9C163.2 38.5 163.8 46.7 163.8 46.8C163.8 47.1 163.6 47.4 163.2 47.5C162.9 47.5 162.6 47.2 162.6 46.9C162.6 46.6 162 38 167.6 33C171.4 29.7 176.9 28.8 184.1 30.3C184.4 30.4 190.3 32.4 193.2 37.5C193.3 37.5 193.5 37.5 193.6 37.5C195.8 37.7 197.9 38.8 199.7 41C199.9 41.2 212.2 59.3 203 79.2C203 79.2 201.5 82.9 197.6 84.8C197.6 84.8 197.6 84.8 197.6 84.8C197.6 84.9 196.2 95.4 183.9 96.3C183.8 96.3 182.9 96.4 181.6 96.4"/><path fill="#221815" d="M105.7 134.3C107.5 133.3 109.8 132.6 112.3 132.6C115.4 132.6 118.2 133.6 120.1 135.1C123.1 129.7 123.1 123.6 123.1 123.6C123.1 123.6 117.5 125.3 106 125.3C94.5 125.3 88.4 123.6 88.4 123.6C88.4 123.6 88.1 129.8 91.1 135.2C93.1 133.7 96 132.6 99.1 132.6C101.6 132.6 103.9 133.3 105.7 134.3"/><path fill="#E58B8C" d="M106.1 143.2C113.6 143.2 117.8 139.4 120.1 135.1C118.2 133.6 115.4 132.6 112.3 132.6C109.8 132.6 107.5 133.3 105.7 134.3C103.9 133.3 101.6 132.6 99.1 132.6C96 132.6 93.1 133.7 91.1 135.2C93.5 139.5 97.9 143.2 106.1 143.2"/><path fill="#1B1517" d="M59.5 106.5C63.5 104.9 68.2 104.2 73.4 104.6C80.5 105 85.2 106 87.4 106.9C87.9 107 88.4 106.8 88.7 106.3C88.9 105.8 88.8 105.2 88.3 104.9C81.4 100.9 76.8 99.7 71.5 99.4C61.8 98.9 58.4 104.8 58.3 105.1L57 107.5L59.5 106.5"/><path fill="#1B1517" d="M60.1 102.9C60.1 102.9 60.7 104.3 61.2 105.1C61.2 105.1 57.8 106.6 54.8 102.7C54.8 102.7 59.2 104.1 60.1 102.9"/><path fill="#1B1517" d="M154.2 106.5C150.2 104.9 145.5 104.2 140.3 104.6C133.2 105 128.6 106 126.3 106.9C125.8 107 125.3 106.8 125 106.3C124.8 105.8 124.9 105.2 125.4 104.9C132.3 100.9 136.9 99.7 142.2 99.4C151.9 98.9 155.3 104.8 155.4 105.1L156.8 107.5L154.2 106.5"/><path fill="#1B1517" d="M153.6 102.9C153.6 102.9 153 104.3 152.5 105.1C152.5 105.1 155.9 106.6 158.9 102.7C158.9 102.7 154.5 104.1 153.6 102.9"/><path fill="#734D2B" d="M77.8 92.8C77.6 92.8 77.5 92.7 77.4 92.6C77.2 92.5 73.9 89.2 69.9 92.5C69.6 92.7 69.3 92.7 69.1 92.4C68.9 92.2 68.9 91.8 69.1 91.6C74 87.6 78.2 91.8 78.2 91.8C78.4 92 78.4 92.4 78.2 92.6C78.1 92.7 77.9 92.8 77.8 92.8"/><path fill="#734D2B" d="M142.7 92.8C142.6 92.8 142.4 92.7 142.3 92.6C142.2 92.5 138.8 89.2 134.8 92.5C134.6 92.7 134.2 92.7 134 92.4C133.8 92.2 133.8 91.8 134.1 91.6C138.9 87.6 143.1 91.8 143.1 91.8C143.4 92 143.3 92.4 143.1 92.6C143 92.7 142.9 92.8 142.7 92.8"/></svg>`;
+  }
+
+  document.getElementById('stampCard').addEventListener('click', openStampBoard);
+  document.querySelector('.sc-seal').innerHTML = stampSeal();
+  refreshStamps();
 
   refreshBadge();
   loadNotices();
