@@ -365,7 +365,8 @@
     background:var(--cream);
     color:var(--ink);
   }
-  .route-btn.kakao{background:var(--accent-green);border-color:var(--accent-green);color:#FFFFFF;}
+  .route-btn.kakao{background:#FEE500;border-color:#FEE500;color:#191919;}
+  .route-btn.naver{background:#03C75A;border-color:#03C75A;color:#FFFFFF;}
   .route-btn:hover{border-color:var(--sage);}
   .route-note{font-size:12px;color:var(--ink-soft);margin:8px 0 0;}
 
@@ -2231,12 +2232,17 @@
 
   // 길찾기는 실제 지도앱에 맡긴다 — 이 지도의 도로망은 간선·주요도로만 있어서
   // 여기서 경로를 계산하면 실제로 걷는 길과 달라진다.
+  // 카카오맵·네이버지도 두 곳만 연다(구글지도는 사용자 요청으로 뺐다).
+  // 네이버지도 길찾기 주소는 위경도가 아니라 웹 메르카토르(EPSG:3857) 미터 좌표를 받는다.
   function routeLinks(name, lat, lng){
     const n = encodeURIComponent(name);
+    const R = 20037508.34;
+    const mx = (lng * R / 180).toFixed(2);
+    const my = (Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180) * R / 180).toFixed(2);
     return `
       <div class="route-row">
         <a class="route-btn kakao" href="https://map.kakao.com/link/to/${n},${lat},${lng}" target="_blank" rel="noopener">카카오맵 길찾기</a>
-        <a class="route-btn" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking" target="_blank" rel="noopener">구글지도</a>
+        <a class="route-btn naver" href="https://map.naver.com/p/directions/-/${mx},${my},${n},,/-/walk" target="_blank" rel="noopener">네이버지도 길찾기</a>
       </div>
       <p class="route-note">내 위치에서 출발하는 경로가 지도앱에서 열려요.</p>`;
   }
